@@ -1,6 +1,6 @@
 "use client";
 
-import { useWallet } from '@txnlab/use-wallet';
+import { useWallet } from '@txnlab/use-wallet-react';
 import Link from "next/link";
 import { ShieldCheck, Zap, Lock, Coins, ArrowRight, User, Building2, CheckCircle2 } from "lucide-react";
 

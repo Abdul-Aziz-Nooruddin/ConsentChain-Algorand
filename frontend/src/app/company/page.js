@@ -1,6 +1,6 @@
 "use client";
 
-import { useWallet } from '@txnlab/use-wallet';
+import { useWallet } from '@txnlab/use-wallet-react';
 import { Shield, Building2, Eye, Database, Coins } from 'lucide-react';
 
 export default function CompanyDashboard() {

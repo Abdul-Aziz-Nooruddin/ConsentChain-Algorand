@@ -1,6 +1,6 @@
 "use client";
 
-import { useWallet } from '@txnlab/use-wallet';
+import { useWallet } from '@txnlab/use-wallet-react';
 import { useState } from 'react';
 import { Shield, PauseCircle, PlayCircle, XCircle, Building } from 'lucide-react';
 

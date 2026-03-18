@@ -1,6 +1,6 @@
 "use client";
 
-import { useWallet } from '@txnlab/use-wallet';
+import { useWallet } from '@txnlab/use-wallet-react';
 import { Shield, ShieldAlert, LineChart, Coins, Users } from 'lucide-react';
 
 export default function AdminDashboard() {
