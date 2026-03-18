@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@perawallet/connect": "^1.5.1",
+    "@txnlab/use-wallet": "^4.6.0",
     "algosdk": "^3.5.2",
     "lucide-react": "^0.577.0",
     "next": "16.1.7",
