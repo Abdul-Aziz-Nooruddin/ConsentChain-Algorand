@@ -11,16 +11,7 @@ const app = express();
 
 // 1. Basic Security Headers (XSS, CSP, etc.)
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Required for Pera Wallet / WalletConnect
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https://algorand.com"],
-      connectSrc: ["'self'", "http://localhost:4001", "https://*.algorand.network"], // Algorand nodes
-      upgradeInsecureRequests: [],
-    },
-  },
+  contentSecurityPolicy: false, // Disabled to ensure wallet connectivity works without CSP interference
 }));
 
 // 2. CORS Configuration

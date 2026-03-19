@@ -18,10 +18,6 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://algorand.com; connect-src 'self' http://localhost:4001 https://*.algorand.network https://*.perawallet.app https://*.walletconnect.com https://*.walletconnect.org;",
-          },
         ],
       },
     ];
