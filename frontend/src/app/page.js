@@ -5,37 +5,25 @@ import Link from "next/link";
 import { ShieldCheck, Zap, Lock, Coins, ArrowRight, User, Building2, CheckCircle2 } from "lucide-react";
 
 export default function Home() {
-  const { providers, activeAccount } = useWallet();
-  console.log("HOME COMPONENT RENDERED - ACTIVE ACCOUNT:", !!activeAccount);
+  const { wallets, activeAccount, isReady } = useWallet();
 
   const handleConnect = async () => {
-    alert("Button Clicked!");
-    console.log("Connect Pera Wallet button CLICKED - START");
-    
-    if (!providers) {
-      console.log("Providers object is NULL or UNDEFINED");
-      alert("Wallet providers not loaded yet.");
+    if (!isReady) {
+      window.alert("Wallet connection is still loading. Please try again in a moment.");
       return;
     }
 
-    console.log("Current providers count:", providers.length);
-    console.log("Available IDs:", providers.map(p => p.metadata.id));
-    
     try {
-      // Find specifically by the PeraWallet ID
-      const pera = providers.find(p => p.metadata.id.toLowerCase().includes('pera'));
+      const pera = wallets.find((wallet) => wallet.id === 'pera');
 
       if (pera) {
-        console.log("Found Pera provider! Attempting connect()...");
         await pera.connect();
-        console.log("Connect call finished (modal should be visible now)");
       } else {
-        console.log("Pera provider NOT FOUND in list.");
-        alert("Pera Wallet provider not found. Try refreshing.");
+        window.alert("Pera Wallet is not available. Refresh the page and try again.");
       }
     } catch (error) {
-      console.error("CRITICAL ERROR during connection:", error);
-      alert("Connection failed: " + error.message);
+      console.error("Pera wallet connection failed:", error);
+      window.alert(`Connection failed: ${error.message}`);
     }
   };
 
@@ -64,9 +52,10 @@ export default function Home() {
           ) : (
             <button
               onClick={handleConnect}
+              disabled={!isReady}
               className="relative z-[100] cursor-pointer pointer-events-auto glow-effect px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]"
             >
-              Connect Pera Wallet
+              {isReady ? "Connect Pera Wallet" : "Loading Wallet..."}
             </button>
           )}
         </div>

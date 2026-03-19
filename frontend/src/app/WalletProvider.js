@@ -1,6 +1,6 @@
 "use client";
 
-import { WalletProvider, WalletManager, WalletId, NetworkId } from '@txnlab/use-wallet-react';
+import { WalletProvider, WalletManager, WalletId, NetworkConfigBuilder, NetworkId } from '@txnlab/use-wallet-react';
 
 const walletManager = new WalletManager({
   wallets: [
@@ -8,19 +8,23 @@ const walletManager = new WalletManager({
       id: WalletId.PERA,
       options: { 
         shouldShowSignTxnToast: true,
-        compact: true // Force compact mode to avoid modal display issues
+        compactMode: false
       }
     }
   ],
-  network: NetworkId.TESTNET,
-  nodeConfig: {
-    network: NetworkId.TESTNET,
-    nodeServer: 'https://testnet-api.algonode.cloud',
-    nodePort: '443',
-    nodeToken: ''
-  },
-  algodOptions: ['https://testnet-api.algonode.cloud', '', '443'],
-  debug: true
+  networks: new NetworkConfigBuilder()
+    .testnet({
+      algod: {
+        baseServer: 'https://testnet-api.algonode.cloud',
+        port: '443',
+        token: ''
+      }
+    })
+    .build(),
+  defaultNetwork: NetworkId.TESTNET,
+  options: {
+    debug: true
+  }
 });
 
 export default function AppWalletProvider({ children }) {
