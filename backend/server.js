@@ -58,13 +58,14 @@ app.get("/api/csrf-token", csrfProtection, (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 
-// Initialize Algorand client
-const algodToken = process.env.ALGOD_TOKEN || "a".repeat(64);
-const algodServer = process.env.ALGOD_SERVER || "http://localhost";
-const algodPort = process.env.ALGOD_PORT || 4001;
+// Initialize Algorand client (Testnet)
+const algodToken = process.env.ALGOD_TOKEN || "";
+const algodServer = process.env.ALGOD_SERVER || "https://testnet-api.algonode.cloud";
+const algodPort = process.env.ALGOD_PORT || 443;
 const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
 
-const APP_ID = parseInt(process.env.APP_ID || "1005", 10);
+// Smart Contract App ID - Deployed to Testnet
+const APP_ID = parseInt(process.env.APP_ID || "757371604", 10);
 
 // Example secure endpoint with CSRF protection
 app.post("/access-data", csrfProtection, async (req, res) => {

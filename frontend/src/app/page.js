@@ -8,12 +8,37 @@ export default function Home() {
   const { providers, activeAccount } = useWallet();
 
   const handleConnect = async () => {
-    if (providers) {
-      // Connect specifically with Pera Wallet
-      const pera = providers.find(p => p.metadata.id === 'pera');
+    if (!providers || providers.length === 0) {
+      console.warn("Wallet providers not ready, waiting 1s...");
+      // Add a small delay for Next.js hydration
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    if (!providers) {
+      console.error("Wallet providers not available.");
+      alert("No wallet providers found. Please refresh the page.");
+      return;
+    }
+
+    try {
+      console.log("Found providers:", providers.map(p => p.metadata.id));
+      
+      // Look for Pera Wallet
+      const pera = providers.find(p => 
+        p.metadata.id.toLowerCase() === 'pera' || 
+        p.metadata.id.toLowerCase().includes('pera')
+      );
+
       if (pera) {
+        console.log("Pera provider ID:", pera.metadata.id);
         await pera.connect();
+      } else {
+        console.error("Pera Wallet not found in providers list.");
+        alert("Pera Wallet provider not found. Please ensure it's installed and configured correctly.");
       }
+    } catch (error) {
+      console.error("Connection error:", error);
+      alert("Failed to connect: " + (error.message || "Unknown error"));
     }
   };
 
