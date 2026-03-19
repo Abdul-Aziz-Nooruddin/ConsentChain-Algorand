@@ -8,28 +8,32 @@ export default function Home() {
   const { providers, activeAccount } = useWallet();
 
   const handleConnect = async () => {
-    console.log("Connect Pera Wallet button CLICKED");
-    console.log("Current providers:", providers?.map(p => ({ id: p.metadata.id, name: p.metadata.name })));
+    console.log("Connect Pera Wallet button CLICKED - START");
     
-    if (!providers || providers.length === 0) {
-      alert("Still loading wallet providers... wait 2s and try again.");
-      console.log("Providers not found yet.");
+    if (!providers) {
+      console.log("Providers object is NULL or UNDEFINED");
+      alert("Wallet providers not loaded yet.");
       return;
     }
 
+    console.log("Current providers count:", providers.length);
+    console.log("Available IDs:", providers.map(p => p.metadata.id));
+    
     try {
       // Find specifically by the PeraWallet ID
       const pera = providers.find(p => p.metadata.id.toLowerCase().includes('pera'));
 
       if (pera) {
-        console.log("Connecting to provider:", pera.metadata.id);
+        console.log("Found Pera provider! Attempting connect()...");
         await pera.connect();
+        console.log("Connect call finished (modal should be visible now)");
       } else {
+        console.log("Pera provider NOT FOUND in list.");
         alert("Pera Wallet provider not found. Try refreshing.");
-        console.log("Pera provider missing. Available:", providers.map(p => p.metadata.id));
       }
     } catch (error) {
-      console.error("Connection failed:", error);
+      console.error("CRITICAL ERROR during connection:", error);
+      alert("Connection failed: " + error.message);
     }
   };
 
