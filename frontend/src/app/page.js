@@ -9,6 +9,8 @@ export default function Home() {
 
   const handleConnect = async () => {
     console.log("Connect Pera Wallet button CLICKED");
+    console.log("Current providers:", providers?.map(p => ({ id: p.metadata.id, name: p.metadata.name })));
+    
     if (!providers || providers.length === 0) {
       alert("Still loading wallet providers... wait 2s and try again.");
       console.log("Providers not found yet.");
