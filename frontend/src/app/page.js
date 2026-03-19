@@ -23,18 +23,22 @@ export default function Home() {
     try {
       console.log("Found providers:", providers.map(p => p.metadata.id));
       
-      // Look for Pera Wallet
-      const pera = providers.find(p => 
-        p.metadata.id.toLowerCase() === 'pera' || 
-        p.metadata.id.toLowerCase().includes('pera')
-      );
+      // Standard ID in @txnlab/use-wallet-react is 'pera'
+      let pera = providers.find(p => p.metadata.id === 'pera');
+      
+      // Fallback to searching if not found directly
+      if (!pera) {
+        pera = providers.find(p => 
+          p.metadata.id.toLowerCase().includes('pera')
+        );
+      }
 
       if (pera) {
-        console.log("Pera provider ID:", pera.metadata.id);
+        console.log("Pera provider found:", pera.metadata.id);
         await pera.connect();
       } else {
-        console.error("Pera Wallet not found in providers list.");
-        alert("Pera Wallet provider not found. Please ensure it's installed and configured correctly.");
+        console.error("Pera Wallet not found in providers list. Available:", providers.map(p => p.metadata.id));
+        alert("Pera Wallet provider not found. Please refresh the page.");
       }
     } catch (error) {
       console.error("Connection error:", error);
