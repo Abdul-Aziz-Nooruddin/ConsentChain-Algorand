@@ -1,17 +1,9 @@
 "use client";
 
 import { WalletProvider, WalletManager, WalletId, NetworkId } from '@txnlab/use-wallet-react';
-import { PeraWalletConnect } from '@perawallet/connect';
 
 const walletManager = new WalletManager({
-  wallets: [
-    {
-      id: WalletId.PERA,
-      options: {
-        shouldShowSignTxnToast: true
-      }
-    }
-  ],
+  wallets: [WalletId.PERA],
   network: NetworkId.TESTNET,
   debug: true
 });
