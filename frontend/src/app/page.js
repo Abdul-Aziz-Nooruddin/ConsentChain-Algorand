@@ -56,7 +56,7 @@ export default function Home() {
           ) : (
             <button
               onClick={handleConnect}
-              className="glow-effect px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+              className="relative z-[100] cursor-pointer pointer-events-auto glow-effect px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]"
             >
               Connect Pera Wallet
             </button>
