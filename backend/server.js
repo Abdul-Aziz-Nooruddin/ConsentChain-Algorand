@@ -14,7 +14,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Add trusted external script domains here
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Required for Pera Wallet / WalletConnect
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https://algorand.com"],
       connectSrc: ["'self'", "http://localhost:4001", "https://*.algorand.network"], // Algorand nodes
