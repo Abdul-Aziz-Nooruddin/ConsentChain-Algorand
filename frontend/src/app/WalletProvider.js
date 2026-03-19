@@ -3,7 +3,14 @@
 import { WalletProvider, WalletManager, WalletId, NetworkId } from '@txnlab/use-wallet-react';
 
 const walletManager = new WalletManager({
-  wallets: [WalletId.PERA],
+  wallets: [
+    {
+      id: WalletId.PERA,
+      options: { 
+        shouldShowSignTxnToast: true
+      }
+    }
+  ],
   network: NetworkId.TESTNET,
   debug: true
 });
