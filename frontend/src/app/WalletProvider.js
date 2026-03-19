@@ -12,6 +12,12 @@ const walletManager = new WalletManager({
     }
   ],
   network: NetworkId.TESTNET,
+  nodeConfig: {
+    network: NetworkId.TESTNET,
+    nodeServer: 'https://testnet-api.algonode.cloud',
+    nodePort: '443',
+    nodeToken: ''
+  },
   debug: true
 });
 
