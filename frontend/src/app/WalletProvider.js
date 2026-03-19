@@ -7,7 +7,8 @@ const walletManager = new WalletManager({
     {
       id: WalletId.PERA,
       options: { 
-        shouldShowSignTxnToast: true
+        shouldShowSignTxnToast: true,
+        compact: true // Force compact mode to avoid modal display issues
       }
     }
   ],
@@ -18,6 +19,7 @@ const walletManager = new WalletManager({
     nodePort: '443',
     nodeToken: ''
   },
+  algodOptions: ['https://testnet-api.algonode.cloud', '', '443'],
   debug: true
 });
 
