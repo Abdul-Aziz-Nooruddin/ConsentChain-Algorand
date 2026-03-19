@@ -8,26 +8,26 @@ export default function Home() {
   const { providers, activeAccount } = useWallet();
 
   const handleConnect = async () => {
+    console.log("Connect Pera Wallet button CLICKED");
     if (!providers || providers.length === 0) {
-      alert("Wait 2 seconds for the wallet to load, then click again.");
+      alert("Still loading wallet providers... wait 2s and try again.");
+      console.log("Providers not found yet.");
       return;
     }
 
     try {
-      console.log("Providers:", providers.map(p => p.metadata.id));
-      
-      const pera = providers.find(p => 
-        p.metadata.id.toLowerCase().includes('pera')
-      );
+      // Find specifically by the PeraWallet ID
+      const pera = providers.find(p => p.metadata.id.toLowerCase().includes('pera'));
 
       if (pera) {
+        console.log("Connecting to provider:", pera.metadata.id);
         await pera.connect();
       } else {
-        alert("Pera Wallet not ready. Please refresh.");
+        alert("Pera Wallet provider not found. Try refreshing.");
+        console.log("Pera provider missing. Available:", providers.map(p => p.metadata.id));
       }
     } catch (error) {
-      console.error("Pera connect error:", error);
-      alert("Connection failed. Check your wallet app.");
+      console.error("Connection failed:", error);
     }
   };
 
