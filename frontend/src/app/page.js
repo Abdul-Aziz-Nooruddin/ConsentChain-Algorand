@@ -6,6 +6,7 @@ import { ShieldCheck, Zap, Lock, Coins, ArrowRight, User, Building2, CheckCircle
 
 export default function Home() {
   const { providers, activeAccount } = useWallet();
+  console.log("HOME COMPONENT RENDERED - ACTIVE ACCOUNT:", !!activeAccount);
 
   const handleConnect = async () => {
     alert("Button Clicked!");
