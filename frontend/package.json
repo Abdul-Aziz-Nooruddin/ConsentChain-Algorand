@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@algorandfoundation/algokit-utils": "^9.2.0",
     "@agoralabs-sh/avm-web-provider": "^1.7.0",
     "@blockshake/defly-connect": "^1.2.1",
     "@magic-ext/algorand": "^24.4.2",
