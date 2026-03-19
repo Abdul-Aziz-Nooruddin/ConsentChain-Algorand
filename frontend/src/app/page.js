@@ -8,6 +8,7 @@ export default function Home() {
   const { providers, activeAccount } = useWallet();
 
   const handleConnect = async () => {
+    alert("Button Clicked!");
     console.log("Connect Pera Wallet button CLICKED - START");
     
     if (!providers) {
