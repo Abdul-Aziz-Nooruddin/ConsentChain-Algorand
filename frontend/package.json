@@ -20,6 +20,7 @@
     "@walletconnect/modal": "^2.7.0",
     "@walletconnect/sign-client": "^2.23.8",
     "algosdk": "^3.5.2",
+    "helmet": "^8.1.0",
     "lucide-react": "^0.577.0",
     "lute-connect": "^1.7.0",
     "next": "16.1.7",

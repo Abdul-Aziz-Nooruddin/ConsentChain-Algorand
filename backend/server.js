@@ -2,33 +2,72 @@ const express = require("express");
 const cors = require("cors");
 const algosdk = require("algosdk");
 const rateLimit = require("express-rate-limit");
+const slowDown = require("express-slow-down");
+const helmet = require("helmet");
+const cookieParser = require("cookie-parser");
+const csrf = require("csurf");
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-// Set up rate limiter: maximum of 100 requests per 15 minutes
+// 1. Basic Security Headers (XSS, CSP, etc.)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Add trusted external script domains here
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https://algorand.com"],
+      connectSrc: ["'self'", "http://localhost:4001", "https://*.algorand.network"], // Algorand nodes
+      upgradeInsecureRequests: [],
+    },
+  },
+}));
+
+// 2. CORS Configuration
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization", "CSRF-Token"],
+}));
+
+app.use(express.json({ limit: "10kb" })); // Body limit for protection
+app.use(cookieParser());
+
+// 3. Rate Limiting (Hard limit)
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { error: "Too many requests from this IP, please try again after 15 minutes" }
 });
-
-// Apply the rate limiting middleware to all requests
 app.use(limiter);
 
-// Initialize Algorand client (LocalNet configuration)
-const algodToken = "a".repeat(64);
-const algodServer = "http://localhost";
-const algodPort = 4001;
+// 4. Throttling (Slow down requests after 50 in 15 mins)
+const speedLimiter = slowDown({
+  windowMs: 15 * 60 * 1000,
+  delayAfter: 50,
+  delayMs: (hits) => hits * 500, // Incrementally slow down
+});
+app.use(speedLimiter);
+
+// 5. CSRF Protection
+const csrfProtection = csrf({ cookie: true });
+app.get("/api/csrf-token", csrfProtection, (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
+// Initialize Algorand client
+const algodToken = process.env.ALGOD_TOKEN || "a".repeat(64);
+const algodServer = process.env.ALGOD_SERVER || "http://localhost";
+const algodPort = process.env.ALGOD_PORT || 4001;
 const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
 
-// Smart Contract App ID (replace with your actual deployed ID, e.g., 1005)
 const APP_ID = parseInt(process.env.APP_ID || "1005", 10);
 
-app.post("/access-data", async (req, res) => {
+// Example secure endpoint with CSRF protection
+app.post("/access-data", csrfProtection, async (req, res) => {
   const { userAddress, companyAddress } = req.body;
 
   if (!userAddress || !companyAddress) {
