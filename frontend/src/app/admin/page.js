@@ -5,9 +5,18 @@ import { useState, useEffect } from 'react';
 import { Shield, ShieldAlert, LineChart, Coins, Users, ExternalLink, Loader2, RefreshCcw } from 'lucide-react';
 import { AlgorandClient } from '@algorandfoundation/algokit-utils';
 
+const APP_ID = 757371604;
+const APP_ADDRESS = "PRAHPRIMDZLWGDDDJMYZYIV7T2SRMXISNZDA52WAK6LYFFXL2L4YJ3YSJ4";
+const ADMIN_WALLET_ADDRESS = "5O6BZV3T2QW2UVD4IW3PWUYLFI7EZDLN4VJJNLNXJ7Q2UCTMTGPS5BTZHU";
+
+function shortenAddress(address) {
+  return `${address.slice(0, 8)}...${address.slice(-8)}`;
+}
+
 export default function AdminDashboard() {
-  const { activeAccount } = useWallet();
+  const { activeAccount, wallets, isReady, activeWallet } = useWallet();
   const [loading, setLoading] = useState(true);
+  const [portalReady, setPortalReady] = useState(false);
   const [metrics, setMetrics] = useState({
     balance: 0,
     boxCount: 0,
@@ -15,25 +24,20 @@ export default function AdminDashboard() {
     recentTxs: []
   });
 
-  const APP_ID = 757371604;
-  const APP_ADDRESS = "PRAHPRIMDZLWGDDDJMYZYIV7T2SRMXISNZDA52WAK6LYFFXL2L4YJ3YSJ4";
+  const isAuthorizedAdmin = activeAccount?.address === ADMIN_WALLET_ADDRESS;
 
   const fetchMetrics = async () => {
     try {
       setLoading(true);
       const algorand = AlgorandClient.testNet();
-      
-      // 1. Fetch App Account Balance
+
       const accountInfo = await algorand.client.algod.accountInformation(APP_ADDRESS).do();
       const balance = accountInfo.amount / 1_000_000;
 
-      // 2. Fetch Box Count (Using Indexer)
-      // Note: Algonode Indexer allows querying boxes
       const boxesResponse = await fetch(`https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/boxes`);
       const boxesData = await boxesResponse.json();
       const boxCount = boxesData.boxes ? boxesData.boxes.length : 0;
 
-      // 3. Fetch Recent Transactions
       const txResponse = await fetch(`https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/transactions?limit=10`);
       const txData = await txResponse.json();
       const recentTxs = txData.transactions || [];
@@ -52,19 +56,104 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (activeAccount) {
+    if (!activeAccount) {
+      setPortalReady(false);
+      return;
+    }
+
+    if (portalReady && isAuthorizedAdmin) {
       fetchMetrics();
-      const interval = setInterval(fetchMetrics, 10000); // Auto-refresh every 10s
+      const interval = setInterval(fetchMetrics, 10000);
       return () => clearInterval(interval);
     }
-  }, [activeAccount]);
+  }, [activeAccount, portalReady, isAuthorizedAdmin]);
 
-  if (!activeAccount) {
+  const connectPera = async () => {
+    if (!isReady) {
+      window.alert('Wallet connection is still loading. Please try again in a moment.');
+      return;
+    }
+
+    try {
+      const pera = wallets.find((wallet) => wallet.id === 'pera');
+      if (!pera) {
+        window.alert('Pera Wallet is not available. Refresh the page and try again.');
+        return;
+      }
+
+      await pera.connect();
+      pera.setActive();
+      setPortalReady(true);
+    } catch (error) {
+      console.error('Pera wallet connection failed:', error);
+      window.alert(`Connection failed: ${error.message}`);
+    }
+  };
+
+  const disconnectWallet = async () => {
+    if (!activeWallet) return;
+
+    try {
+      await activeWallet.disconnect();
+      setPortalReady(false);
+    } catch (error) {
+      console.error('Wallet disconnect failed:', error);
+      window.alert(`Disconnect failed: ${error.message}`);
+    }
+  };
+
+  if (!activeAccount || !portalReady) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6">
         <Shield className="w-16 h-16 text-slate-300 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Wallet Disconnected</h2>
-        <p className="text-slate-500">Please connect the Admin Pera Wallet to view platform statistics.</p>
+        <h2 className="text-2xl font-bold mb-2">Connect Admin Wallet</h2>
+        <p className="text-slate-500 max-w-md">
+          This portal is restricted to one specific admin wallet address.
+        </p>
+        <p className="mt-4 font-mono text-xs text-slate-500 break-all max-w-xl">
+          {ADMIN_WALLET_ADDRESS}
+        </p>
+        {activeAccount && !portalReady ? (
+          <div className="mt-6 glass-card p-5 rounded-2xl max-w-md w-full">
+            <p className="text-sm text-slate-500 mb-2">Detected connected wallet</p>
+            <p className="font-mono text-sm break-all mb-4">{activeAccount.address}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button onClick={() => setPortalReady(true)} className="px-5 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold">
+                Use This Wallet
+              </button>
+              <button onClick={disconnectWallet} className="px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold">
+                Switch Wallet
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={connectPera}
+            disabled={!isReady}
+            className="mt-6 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50"
+          >
+            {isReady ? 'Connect Pera Wallet' : 'Loading Wallet...'}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (!isAuthorizedAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6">
+        <ShieldAlert className="w-16 h-16 text-red-400 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Admin Access Denied</h2>
+        <p className="text-slate-500 max-w-md">
+          This portal is restricted to the approved admin wallet only.
+        </p>
+        <p className="mt-4 text-sm text-slate-500">Connected wallet</p>
+        <p className="font-mono text-xs break-all max-w-xl">{activeAccount.address}</p>
+        <p className="mt-4 text-sm text-slate-500">Required admin wallet</p>
+        <p className="font-mono text-xs break-all max-w-xl">{ADMIN_WALLET_ADDRESS}</p>
+        <button onClick={disconnectWallet} className="mt-6 px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold">
+          Switch Wallet
+        </button>
       </div>
     );
   }
@@ -78,7 +167,7 @@ export default function AdminDashboard() {
         </div>
         <div className="text-right flex flex-col items-end gap-2">
           <div className="flex items-center gap-3">
-             <button 
+             <button
               onClick={fetchMetrics}
               disabled={loading}
               className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
@@ -90,7 +179,10 @@ export default function AdminDashboard() {
               Admin Role
             </div>
           </div>
-          <div className="text-[10px] font-mono opacity-60">Connected: {activeAccount.address}</div>
+          <div className="text-[10px] font-mono opacity-60">Connected: {shortenAddress(ADMIN_WALLET_ADDRESS)}</div>
+          <button onClick={disconnectWallet} className="text-xs text-blue-600 font-semibold">
+            Switch Wallet
+          </button>
         </div>
       </div>
 
@@ -154,10 +246,10 @@ export default function AdminDashboard() {
                       <p className="text-[10px] opacity-50">{new Date(tx['round-time'] * 1000).toLocaleTimeString()}</p>
                     </td>
                     <td className="py-4 px-6">
-                       <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase ${
-                        tx['application-transaction']['on-completion'] === 'noop' 
-                        ? 'bg-blue-100 text-blue-700' 
-                        : 'bg-amber-100 text-amber-700'
+                      <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase ${
+                        tx['application-transaction']['on-completion'] === 'noop'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-amber-100 text-amber-700'
                       }`}>
                         {tx['tx-type']} / {tx['application-transaction']['on-completion']}
                       </span>
@@ -166,9 +258,9 @@ export default function AdminDashboard() {
                       {tx.sender.slice(0, 12)}...{tx.sender.slice(-12)}
                     </td>
                     <td className="py-4 px-6 text-right">
-                      <a 
-                        href={`https://perawallet.app/explorer/transaction/${tx.id}`} 
-                        target="_blank" 
+                      <a
+                        href={`https://perawallet.app/explorer/transaction/${tx.id}`}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-700 font-bold text-xs"
                       >
