@@ -9,7 +9,6 @@ import algosdk, { decodeAddress, encodeAddress } from 'algosdk';
 
 const APP_ID = 757371604;
 const INDEXER_URL = `https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/boxes?limit=1000`;
-const CONSENT_SUBMIT_TIMEOUT_MS = 25000;
 const STATUS_REFRESH_TIMEOUT_MS = 8000;
 
 function arraysEqual(left, right) {
@@ -194,11 +193,7 @@ export default function UserDashboard() {
         boxes: buildConsentBoxReference(activeAccount.address, companyAddress),
       });
 
-      const txIds = await withTimeout(
-        composer.submit(algodClient),
-        CONSENT_SUBMIT_TIMEOUT_MS,
-        'Transaction submission timed out. Please check Pera Wallet, then retry.'
-      );
+      const txIds = await composer.submit(algodClient);
       const txId = txIds[0];
       console.log("Transaction submitted:", txId);
       setCompanies((previousCompanies) => {
