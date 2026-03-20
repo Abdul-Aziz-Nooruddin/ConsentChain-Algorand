@@ -19,11 +19,12 @@ function decodeBase64ToBytes(base64) {
 }
 
 export default function CompanyDashboard() {
-  const { activeAccount, signer } = useWallet();
+  const { activeAccount, signer, wallets, isReady, activeWallet } = useWallet();
   const [loading, setLoading] = useState(false);
   const [consentStatuses, setConsentStatuses] = useState({});
   const [purchasedData, setPurchasedData] = useState({});
   const [users, setUsers] = useState([]);
+  const [portalReady, setPortalReady] = useState(false);
 
   const fetchStatuses = async () => {
     if (!activeAccount) return;
@@ -34,7 +35,7 @@ export default function CompanyDashboard() {
       const boxesData = await boxesResponse.json();
       const discoveredUsers = [];
       const newStatuses = {};
-      
+
       for (const box of (boxesData.boxes || [])) {
         try {
           const boxKey = decodeBase64ToBytes(box.name);
@@ -73,11 +74,51 @@ export default function CompanyDashboard() {
     if (!activeAccount) {
       setUsers([]);
       setConsentStatuses({});
+      setPortalReady(false);
       return;
     }
-    fetchStatuses();
+
+    if (portalReady) {
+      fetchStatuses();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeAccount]);
+  }, [activeAccount, portalReady]);
+
+  const connectPera = async () => {
+    if (!isReady) {
+      window.alert('Wallet connection is still loading. Please try again in a moment.');
+      return;
+    }
+
+    try {
+      const pera = wallets.find((wallet) => wallet.id === 'pera');
+      if (!pera) {
+        window.alert('Pera Wallet is not available. Refresh the page and try again.');
+        return;
+      }
+
+      await pera.connect();
+      pera.setActive();
+      setPortalReady(true);
+    } catch (error) {
+      console.error('Pera wallet connection failed:', error);
+      window.alert(`Connection failed: ${error.message}`);
+    }
+  };
+
+  const disconnectWallet = async () => {
+    if (!activeWallet) return;
+
+    try {
+      await activeWallet.disconnect();
+      setPortalReady(false);
+      setUsers([]);
+      setConsentStatuses({});
+    } catch (error) {
+      console.error('Wallet disconnect failed:', error);
+      window.alert(`Disconnect failed: ${error.message}`);
+    }
+  };
 
   const handleBuyData = async (userAddress, userId) => {
     if (!activeAccount || !signer) return;
@@ -91,16 +132,12 @@ export default function CompanyDashboard() {
         signer: signer,
       }, algorand.client.algod);
 
-      console.log("Initiating Data Purchase from:", userAddress);
-
-      // Create Payment Transaction (2 ALGO to App Address)
       const payTxn = await algorand.createTransaction.payment({
         sender: activeAccount.address,
         receiver: algosdk.getApplicationAddress(APP_ID),
         amount: (2).algo(),
       });
 
-      // Call accessData(user, payTxn)
       const result = await client.send.accessData({
         args: {
           user: userAddress,
@@ -109,7 +146,7 @@ export default function CompanyDashboard() {
       });
 
       console.log("Purchase Successful! TxID:", result.transaction.txID());
-      setPurchasedData(prev => ({ ...prev, [userId]: { creditScore: 780 + Math.floor(Math.random() * 20), health: "Healthy" } }));
+      setPurchasedData((prev) => ({ ...prev, [userId]: { creditScore: 780 + Math.floor(Math.random() * 20), health: "Healthy" } }));
       alert("Data purchased successfully! The payment has been split 50/50 between the User and Admin on the blockchain.");
     } catch (error) {
       console.error("Purchase failed:", error);
@@ -119,12 +156,36 @@ export default function CompanyDashboard() {
     }
   };
 
-  if (!activeAccount) {
+  if (!activeAccount || !portalReady) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6">
         <Shield className="w-16 h-16 text-slate-300 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Wallet Disconnected</h2>
-        <p className="text-slate-500">Please connect your Pera Wallet from the home page to access the portal.</p>
+        <h2 className="text-2xl font-bold mb-2">Connect Company Wallet</h2>
+        <p className="text-slate-500 max-w-md">
+          Enter the company portal with the wallet that represents the company account. Use a different wallet than the user portal.
+        </p>
+        {activeAccount && !portalReady ? (
+          <div className="mt-6 glass-card p-5 rounded-2xl max-w-md w-full">
+            <p className="text-sm text-slate-500 mb-2">Detected connected wallet</p>
+            <p className="font-mono text-sm break-all mb-4">{activeAccount.address}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button onClick={() => setPortalReady(true)} className="px-5 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold">
+                Use This Wallet
+              </button>
+              <button onClick={disconnectWallet} className="px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold">
+                Switch Wallet
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={connectPera}
+            disabled={!isReady}
+            className="mt-6 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold disabled:opacity-50"
+          >
+            {isReady ? 'Connect Pera Wallet' : 'Loading Wallet...'}
+          </button>
+        )}
       </div>
     );
   }
@@ -142,6 +203,9 @@ export default function CompanyDashboard() {
             <Building2 className="w-4 h-4 text-blue-500" />
             <p className="font-mono font-medium">{activeAccount.address.slice(0, 8)}...{activeAccount.address.slice(-8)}</p>
           </div>
+          <button onClick={disconnectWallet} className="mt-2 text-xs text-blue-600 font-semibold">
+            Switch Wallet
+          </button>
         </div>
       </div>
 
@@ -157,11 +221,11 @@ export default function CompanyDashboard() {
       <div className="grid md:grid-cols-3 gap-6 mb-12">
         <div className="glass-card p-6 rounded-2xl border-l-4 border-emerald-500">
           <p className="text-slate-500 text-sm font-semibold mb-1 uppercase">Available Records</p>
-          <p className="text-3xl font-bold">{Object.values(consentStatuses).filter(s => s === 'GIVEN').length}</p>
+          <p className="text-3xl font-bold">{Object.values(consentStatuses).filter((s) => s === 'GIVEN').length}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl border-l-4 border-amber-500">
           <p className="text-slate-500 text-sm font-semibold mb-1 uppercase">Paused Records</p>
-          <p className="text-3xl font-bold">{Object.values(consentStatuses).filter(s => s === 'PAUSED').length}</p>
+          <p className="text-3xl font-bold">{Object.values(consentStatuses).filter((s) => s === 'PAUSED').length}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl border-l-4 border-blue-500">
           <p className="text-slate-500 text-sm font-semibold mb-1 uppercase">Records Purchased</p>
@@ -200,8 +264,8 @@ export default function CompanyDashboard() {
                 </td>
                 <td className="py-4 px-6">
                   <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${
-                    consentStatuses[user.id] === 'GIVEN' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
-                    consentStatuses[user.id] === 'PAUSED' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
+                    consentStatuses[user.id] === 'GIVEN' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
+                    consentStatuses[user.id] === 'PAUSED' ? 'bg-amber-100 text-amber-700 border-amber-200' :
                     'bg-red-100 text-red-700 border-red-200'
                   }`}>
                     {consentStatuses[user.id] || 'CHECKING...'}
@@ -211,13 +275,13 @@ export default function CompanyDashboard() {
                   <Coins className="w-4 h-4 text-yellow-500" /> {user.cost} ALGO
                 </td>
                 <td className="py-4 px-6 text-right">
-                  <button 
+                  <button
                     onClick={() => handleBuyData(user.address, user.id)}
                     disabled={consentStatuses[user.id] !== 'GIVEN' || purchasedData[user.id] || loading}
                     className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                       consentStatuses[user.id] === 'GIVEN' && !purchasedData[user.id]
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg glow-effect' 
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg glow-effect'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
                     }`}
                   >
                     <Database className="w-4 h-4" />

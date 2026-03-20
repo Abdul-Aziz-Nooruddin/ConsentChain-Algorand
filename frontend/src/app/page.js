@@ -1,39 +1,14 @@
 "use client";
 
-import { useWallet } from '@txnlab/use-wallet-react';
 import Link from "next/link";
-import { ShieldCheck, Zap, Lock, Coins, ArrowRight, User, Building2, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Zap, Lock, Coins, ArrowRight, User, Building2, CheckCircle2, ShieldAlert } from "lucide-react";
 
 export default function Home() {
-  const { wallets, activeAccount, isReady } = useWallet();
-
-  const handleConnect = async () => {
-    if (!isReady) {
-      window.alert("Wallet connection is still loading. Please try again in a moment.");
-      return;
-    }
-
-    try {
-      const pera = wallets.find((wallet) => wallet.id === 'pera');
-
-      if (pera) {
-        await pera.connect();
-      } else {
-        window.alert("Pera Wallet is not available. Refresh the page and try again.");
-      }
-    } catch (error) {
-      console.error("Pera wallet connection failed:", error);
-      window.alert(`Connection failed: ${error.message}`);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 overflow-hidden relative">
-      {/* Background gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/20 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-teal-500/20 blur-[120px] pointer-events-none" />
 
-      {/* Navbar */}
       <nav className="glass-panel sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-8 h-8 text-blue-600 dark:text-blue-400" />
@@ -41,42 +16,25 @@ export default function Home() {
             ConsentChain
           </span>
         </div>
-        <div className="flex items-center gap-4">
-          {activeAccount ? (
-            <div className="flex bg-slate-100 dark:bg-slate-800 rounded-full px-4 py-2 items-center gap-2 border border-slate-200 dark:border-slate-700">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-sm font-medium opacity-80">
-                {activeAccount.address.slice(0, 5)}...{activeAccount.address.slice(-4)}
-              </span>
-            </div>
-          ) : (
-            <button
-              onClick={handleConnect}
-              disabled={!isReady}
-              className="relative z-[100] cursor-pointer pointer-events-auto glow-effect px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]"
-            >
-              {isReady ? "Connect Pera Wallet" : "Loading Wallet..."}
-            </button>
-          )}
+        <div className="flex bg-slate-100 dark:bg-slate-800 rounded-full px-4 py-2 items-center gap-2 border border-slate-200 dark:border-slate-700">
+          <span className="w-2 h-2 rounded-full bg-blue-500" />
+          <span className="text-sm font-medium opacity-80">Connect inside each portal</span>
         </div>
       </nav>
 
-      {/* Hero Section */}
       <main className="container mx-auto px-6 py-20 flex flex-col items-center text-center max-w-5xl relative z-10">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card text-sm font-medium mb-8 text-blue-600 dark:text-blue-400">
           <span className="flex w-2 h-2 rounded-full bg-blue-500"></span>
           DPDP Act 2023 Compliant Platform
         </div>
-        
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
           Own Your Data. <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-teal-400 to-emerald-400">
             Monetize Your Consent.
           </span>
         </h1>
-        
         <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl">
-          A revolutionary escrow-based consent management platform built on Algorand. 
+          A revolutionary escrow-based consent management platform built on Algorand.
           Empowering individuals with transparent control over their digital footprint while enabling fair compensation.
         </p>
 
@@ -90,14 +48,17 @@ export default function Home() {
             <Building2 className="w-5 h-5 text-blue-500" />
             Company Portal
           </Link>
+          <Link href="/admin" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-full glass-card font-semibold text-lg transition-transform hover:scale-105 hover:border-purple-500/50">
+            <ShieldAlert className="w-5 h-5 text-purple-500" />
+            Admin Panel
+          </Link>
         </div>
       </main>
 
-      {/* Feature Sections */}
       <section className="container mx-auto px-6 py-20 max-w-6xl">
         <div className="grid md:grid-cols-2 gap-12 items-center mb-32">
           <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold">Powered by DPDP Act 2023 🇮🇳</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Powered by DPDP Act 2023 ðŸ‡®ðŸ‡³</h2>
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
               The Digital Personal Data Protection Act of 2023 establishes a comprehensive framework for the processing of digital personal data in India. It recognizes both the right of individuals to protect their personal data and the need to process such data for lawful purposes.
             </p>
@@ -164,9 +125,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-slate-500 dark:text-slate-400 mt-20">
-        <p>© 2026 ConsentChain Algorand. Built for data sovereignty.</p>
+        <p>Â© 2026 ConsentChain Algorand. Built for data sovereignty.</p>
       </footer>
     </div>
   );
