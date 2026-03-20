@@ -37,7 +37,7 @@ function buildConsentBoxReference(userAddress, companyAddress) {
   name.set(prefix);
   name.set(userBytes, prefix.length);
   name.set(companyBytes, prefix.length + userBytes.length);
-  return [{ appId: BigInt(APP_ID), name }];
+  return [{ appIndex: BigInt(APP_ID), name }];
 }
 
 export default function UserDashboard() {
@@ -46,7 +46,6 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [companyAddressInput, setCompanyAddressInput] = useState('');
-  const [discoveryError, setDiscoveryError] = useState('');
   const [portalReady, setPortalReady] = useState(false);
   const [consentStatuses, setConsentStatuses] = useState({});
 
@@ -103,10 +102,8 @@ export default function UserDashboard() {
 
       setCompanies(discoveredCompanies);
       setConsentStatuses(newStatuses);
-      setDiscoveryError('');
     } catch (error) {
       console.error("Error fetching statuses:", error);
-      setDiscoveryError('Live consent discovery is temporarily unavailable. You can still grant consent by entering a real company wallet address below.');
     }
   };
 
@@ -161,7 +158,10 @@ export default function UserDashboard() {
   };
 
   const handleConsentAction = async (companyAddress, action) => {
-    if (!activeAccount) return;
+    if (!activeAccount || !transactionSigner || !algodClient) {
+      window.alert('Wallet signer is not ready yet. Refresh the page and reconnect your wallet.');
+      return;
+    }
     setLoading(true);
     try {
       const suggestedParams = await algodClient.getTransactionParams().do();
@@ -314,11 +314,10 @@ export default function UserDashboard() {
             Give Consent
           </button>
         </div>
-        {discoveryError && <p className="mt-3 text-sm text-red-600">{discoveryError}</p>}
       </div>
 
       <div className="grid gap-6">
-        {companies.length === 0 && !discoveryError && (
+        {companies.length === 0 && (
           <div className="glass-card p-8 rounded-2xl text-center text-slate-500">
             No real company consent records were found for this wallet yet.
           </div>
