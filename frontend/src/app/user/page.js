@@ -9,6 +9,8 @@ import algosdk, { decodeAddress, encodeAddress } from 'algosdk';
 
 const APP_ID = 757371604;
 const INDEXER_URL = `https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/boxes?limit=1000`;
+const CONSENT_SUBMIT_TIMEOUT_MS = 25000;
+const STATUS_REFRESH_TIMEOUT_MS = 8000;
 
 function arraysEqual(left, right) {
   return left.length === right.length && left.every((value, index) => value === right[index]);
@@ -38,6 +40,15 @@ function buildConsentBoxReference(userAddress, companyAddress) {
   name.set(userBytes, prefix.length);
   name.set(companyBytes, prefix.length + userBytes.length);
   return [{ appIndex: BigInt(APP_ID), name }];
+}
+
+function withTimeout(promise, timeoutMs, errorMessage) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+    }),
+  ]);
 }
 
 export default function UserDashboard() {
@@ -183,7 +194,11 @@ export default function UserDashboard() {
         boxes: buildConsentBoxReference(activeAccount.address, companyAddress),
       });
 
-      const txIds = await composer.submit(algodClient);
+      const txIds = await withTimeout(
+        composer.submit(algodClient),
+        CONSENT_SUBMIT_TIMEOUT_MS,
+        'Transaction submission timed out. Please check Pera Wallet, then retry.'
+      );
       const txId = txIds[0];
       console.log("Transaction submitted:", txId);
       setCompanies((previousCompanies) => {
@@ -210,11 +225,13 @@ export default function UserDashboard() {
       }));
       setCompanyAddressInput('');
       alert(`Consent ${action} transaction submitted on Algorand Testnet.\nTxID: ${txId}`);
-      try {
-        await fetchStatuses();
-      } catch (refreshError) {
+      withTimeout(
+        fetchStatuses(),
+        STATUS_REFRESH_TIMEOUT_MS,
+        'Status refresh timed out after transaction submission.'
+      ).catch((refreshError) => {
         console.error('Status refresh failed after consent transaction:', refreshError);
-      }
+      });
     } catch (error) {
       console.error(`Error during ${action} consent:`, error);
       alert(`Transaction failed: ${error.message}`);
