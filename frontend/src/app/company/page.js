@@ -72,6 +72,8 @@ export default function CompanyDashboard() {
       setConsentStatuses(newStatuses);
     } catch (error) {
       console.error("Error fetching statuses:", error);
+      setUsers([]);
+      setConsentStatuses({});
     }
   };
 

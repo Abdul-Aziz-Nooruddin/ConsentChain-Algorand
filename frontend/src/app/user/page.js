@@ -22,6 +22,17 @@ function shortenAddress(address) {
   return `${address.slice(0, 8)}...${address.slice(-8)}`;
 }
 
+function buildConsentBoxReference(userAddress, companyAddress) {
+  const prefix = new Uint8Array([99]);
+  const userBytes = decodeAddress(userAddress).publicKey;
+  const companyBytes = decodeAddress(companyAddress).publicKey;
+  const name = new Uint8Array(prefix.length + userBytes.length + companyBytes.length);
+  name.set(prefix);
+  name.set(userBytes, prefix.length);
+  name.set(companyBytes, prefix.length + userBytes.length);
+  return [{ appId: BigInt(APP_ID), name }];
+}
+
 export default function UserDashboard() {
   const { activeAccount, signer, wallets, isReady, activeWallet } = useWallet();
   const [loading, setLoading] = useState(false);
@@ -83,7 +94,7 @@ export default function UserDashboard() {
       setDiscoveryError('');
     } catch (error) {
       console.error("Error fetching statuses:", error);
-      setDiscoveryError('Unable to load consent records from the Algorand indexer.');
+      setDiscoveryError('Live consent discovery is temporarily unavailable. You can still grant consent by entering a real company wallet address below.');
     }
   };
 
@@ -143,13 +154,14 @@ export default function UserDashboard() {
     try {
       const client = getClient();
       let result;
+      const boxReferences = buildConsentBoxReference(activeAccount.address, companyAddress);
 
       if (action === 'give') {
-        result = await client.send.giveConsent({ args: { company: companyAddress } });
+        result = await client.send.giveConsent({ args: { company: companyAddress }, boxReferences });
       } else if (action === 'pause') {
-        result = await client.send.pauseConsent({ args: { company: companyAddress } });
+        result = await client.send.pauseConsent({ args: { company: companyAddress }, boxReferences });
       } else if (action === 'revoke') {
-        result = await client.send.revokeConsent({ args: { company: companyAddress } });
+        result = await client.send.revokeConsent({ args: { company: companyAddress }, boxReferences });
       }
 
       console.log("Transaction successful:", result.transaction.txID());
