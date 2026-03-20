@@ -183,9 +183,9 @@ export default function UserDashboard() {
         boxes: buildConsentBoxReference(activeAccount.address, companyAddress),
       });
 
-      const result = await composer.execute(algodClient, 4);
-      const txId = result.txIDs[0];
-      console.log("Transaction successful:", txId);
+      const txIds = await composer.submit(algodClient);
+      const txId = txIds[0];
+      console.log("Transaction submitted:", txId);
       setCompanies((previousCompanies) => {
         if (previousCompanies.some((company) => company.address === companyAddress)) {
           return previousCompanies;
@@ -199,8 +199,17 @@ export default function UserDashboard() {
           },
         ];
       });
+      setConsentStatuses((previousStatuses) => ({
+        ...previousStatuses,
+        [companyAddress]:
+          action === 'give'
+            ? 'GIVEN'
+            : action === 'pause'
+              ? 'PAUSED'
+              : 'REVOKED',
+      }));
       setCompanyAddressInput('');
-      alert(`Consent ${action}d successfully on Algorand Testnet!`);
+      alert(`Consent ${action} transaction submitted on Algorand Testnet.\nTxID: ${txId}`);
       try {
         await fetchStatuses();
       } catch (refreshError) {
