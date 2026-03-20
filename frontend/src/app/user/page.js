@@ -10,6 +10,7 @@ import algosdk, { decodeAddress, encodeAddress } from 'algosdk';
 const APP_ID = 757371604;
 const INDEXER_URL = `https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/boxes?limit=1000`;
 const STATUS_REFRESH_TIMEOUT_MS = 8000;
+const CONFIRMATION_WAIT_ROUNDS = 8;
 
 function arraysEqual(left, right) {
   return left.length === right.length && left.every((value, index) => value === right[index]);
@@ -48,6 +49,12 @@ function withTimeout(promise, timeoutMs, errorMessage) {
       window.setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
     }),
   ]);
+}
+
+function getOptimisticStatus(action) {
+  if (action === 'give') return 'PENDING';
+  if (action === 'pause') return 'PENDING';
+  return 'PENDING';
 }
 
 export default function UserDashboard() {
@@ -167,6 +174,43 @@ export default function UserDashboard() {
     }
   };
 
+  const confirmSubmittedConsent = async (txId, companyAddress, action, previousStatus) => {
+    try {
+      await algosdk.waitForConfirmation(algodClient, txId, CONFIRMATION_WAIT_ROUNDS);
+
+      setConsentStatuses((previousStatuses) => ({
+        ...previousStatuses,
+        [companyAddress]:
+          action === 'give'
+            ? 'GIVEN'
+            : action === 'pause'
+              ? 'PAUSED'
+              : 'REVOKED',
+      }));
+    } catch (error) {
+      console.error('Confirmation check failed after submission:', error);
+      setConsentStatuses((previousStatuses) => {
+        const nextStatuses = { ...previousStatuses };
+
+        if (previousStatus) {
+          nextStatuses[companyAddress] = previousStatus;
+        } else {
+          delete nextStatuses[companyAddress];
+        }
+
+        return nextStatuses;
+      });
+    } finally {
+      withTimeout(
+        fetchStatuses(),
+        STATUS_REFRESH_TIMEOUT_MS,
+        'Status refresh timed out after confirmation check.'
+      ).catch((refreshError) => {
+        console.error('Status refresh failed after confirmation check:', refreshError);
+      });
+    }
+  };
+
   const handleConsentAction = async (companyAddress, action) => {
     if (!activeAccount || !transactionSigner || !algodClient) {
       window.alert('Wallet signer is not ready yet. Refresh the page and reconnect your wallet.');
@@ -209,24 +253,14 @@ export default function UserDashboard() {
           },
         ];
       });
+      const previousStatus = consentStatuses[companyAddress];
       setConsentStatuses((previousStatuses) => ({
         ...previousStatuses,
-        [companyAddress]:
-          action === 'give'
-            ? 'GIVEN'
-            : action === 'pause'
-              ? 'PAUSED'
-              : 'REVOKED',
+        [companyAddress]: getOptimisticStatus(action),
       }));
       setCompanyAddressInput('');
       alert(`Consent ${action} transaction submitted on Algorand Testnet.\nTxID: ${txId}`);
-      withTimeout(
-        fetchStatuses(),
-        STATUS_REFRESH_TIMEOUT_MS,
-        'Status refresh timed out after transaction submission.'
-      ).catch((refreshError) => {
-        console.error('Status refresh failed after consent transaction:', refreshError);
-      });
+      confirmSubmittedConsent(txId, companyAddress, action, previousStatus);
     } catch (error) {
       console.error(`Error during ${action} consent:`, error);
       alert(`Transaction failed: ${error.message}`);
@@ -284,6 +318,8 @@ export default function UserDashboard() {
         return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
       case 'PAUSED':
         return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+      case 'PENDING':
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800';
       case 'REVOKED':
         return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800';
       default:
