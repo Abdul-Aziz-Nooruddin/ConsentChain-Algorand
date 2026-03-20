@@ -13,6 +13,10 @@ function shortenAddress(address) {
   return `${address.slice(0, 8)}...${address.slice(-8)}`;
 }
 
+function maskAdminAddress(address) {
+  return `${address.slice(0, 5)}.....${address.slice(-5)}`;
+}
+
 export default function AdminDashboard() {
   const { activeAccount, wallets, isReady, activeWallet } = useWallet();
   const [loading, setLoading] = useState(true);
@@ -111,7 +115,7 @@ export default function AdminDashboard() {
           This portal is restricted to one specific admin wallet address.
         </p>
         <p className="mt-4 font-mono text-xs text-slate-500 break-all max-w-xl">
-          {ADMIN_WALLET_ADDRESS}
+          {maskAdminAddress(ADMIN_WALLET_ADDRESS)}
         </p>
         {activeAccount && !portalReady ? (
           <div className="mt-6 glass-card p-5 rounded-2xl max-w-md w-full">
@@ -150,7 +154,7 @@ export default function AdminDashboard() {
         <p className="mt-4 text-sm text-slate-500">Connected wallet</p>
         <p className="font-mono text-xs break-all max-w-xl">{activeAccount.address}</p>
         <p className="mt-4 text-sm text-slate-500">Required admin wallet</p>
-        <p className="font-mono text-xs break-all max-w-xl">{ADMIN_WALLET_ADDRESS}</p>
+        <p className="font-mono text-xs break-all max-w-xl">{maskAdminAddress(ADMIN_WALLET_ADDRESS)}</p>
         <button onClick={disconnectWallet} className="mt-6 px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold">
           Switch Wallet
         </button>
