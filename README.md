@@ -128,48 +128,11 @@ npm run dev
 
 Default frontend port: `3000`
 
-## Judge Demo Setup
-
-For a clean live demo:
-
-1. Create three Algorand Testnet wallets
-2. Fund each wallet with Testnet ALGO
-3. Use one wallet for `User`
-4. Use one wallet for `Company`
-5. Use one wallet for `Admin`
-6. Open the homepage and launch each portal in a new tab
-7. Connect the correct wallet inside each portal
-
-Suggested tab layout:
-
-- Tab 1: Home
-- Tab 2: User Dashboard
-- Tab 3: Company Portal
-- Tab 4: Admin Panel
-
-## Search-Friendly Keywords
-
-This repository is relevant for:
-
-- Algorand consent management
-- ConsentChain Algorand
-- DPDP Act blockchain project
-- Web3 privacy and data consent
-- Pera Wallet demo application
-- Algorand smart contract consent platform
-
-## Suggested GitHub Topics
-
-Add these topics in the GitHub repository settings for better discoverability:
-
-`algorand`, `consent-management`, `dpdp`, `blockchain`, `nextjs`, `pera-wallet`, `privacy`, `web3`, `smart-contracts`, `data-consent`
-
 ## Future Improvements
 
 - Better screenshot gallery in the README
 - Custom company metadata instead of address-only display
-- Stronger admin role management
-- Production deployment hardening
+- Stronger production-grade role management
 - Expanded off-chain data release workflows
 
 ## License
