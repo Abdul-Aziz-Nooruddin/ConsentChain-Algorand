@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Shield, PauseCircle, PlayCircle, XCircle, Building, Loader2 } from 'lucide-react';
 import { AlgorandClient } from '@algorandfoundation/algokit-utils';
 import { ConsentManagerClient } from '@/contracts/ConsentManagerClient';
-import algosdk, { decodeAddress, encodeAddress } from 'algosdk';
+import { decodeAddress, encodeAddress } from 'algosdk';
 
 const APP_ID = 757371604;
 const INDEXER_URL = `https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/boxes?limit=1000`;
@@ -16,13 +16,6 @@ function arraysEqual(left, right) {
 
 function decodeBase64ToBytes(base64) {
   return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
-}
-
-function normalizeBoxValue(value) {
-  if (value instanceof Uint8Array) return value;
-  if (Array.isArray(value)) return Uint8Array.from(value);
-  if (typeof value === 'string') return decodeBase64ToBytes(value);
-  throw new Error('Unexpected box value format');
 }
 
 function shortenAddress(address) {
@@ -51,7 +44,7 @@ export default function UserDashboard() {
   const fetchStatuses = async () => {
     if (!activeAccount) return;
     try {
-      const algorand = AlgorandClient.testNet();
+      const client = getClient();
       const userBytes = decodeAddress(activeAccount.address).publicKey;
       const boxesResponse = await fetch(INDEXER_URL);
       const boxesData = await boxesResponse.json();
@@ -68,8 +61,7 @@ export default function UserDashboard() {
           if (!arraysEqual(boxUserBytes, userBytes)) continue;
 
           const companyAddress = encodeAddress(companyBytes);
-          const boxResponse = await algorand.client.algod.getApplicationBoxByName(APP_ID, boxKey).do();
-          const value = algosdk.decodeUint64(normalizeBoxValue(boxResponse.value), 'safe');
+          const value = await client.state.box.consents.value([activeAccount.address, companyAddress]);
 
           discoveredCompanies.push({
             id: companyAddress,
@@ -77,8 +69,9 @@ export default function UserDashboard() {
             address: companyAddress,
           });
 
-          if (value === 1n || value === 1) newStatuses[companyAddress] = 'GIVEN';
-          else if (value === 2n || value === 2) newStatuses[companyAddress] = 'PAUSED';
+          if (value === 1n) newStatuses[companyAddress] = 'GIVEN';
+          else if (value === 2n) newStatuses[companyAddress] = 'PAUSED';
+          else if (value === undefined) newStatuses[companyAddress] = 'REVOKED';
           else newStatuses[companyAddress] = 'UNKNOWN';
         } catch (e) {
           console.error('Error reading consent box:', e);
@@ -175,7 +168,11 @@ export default function UserDashboard() {
       });
       setCompanyAddressInput('');
       alert(`Consent ${action}d successfully on Algorand Testnet!`);
-      await fetchStatuses();
+      try {
+        await fetchStatuses();
+      } catch (refreshError) {
+        console.error('Status refresh failed after consent transaction:', refreshError);
+      }
     } catch (error) {
       console.error(`Error during ${action} consent:`, error);
       alert(`Transaction failed: ${error.message}`);

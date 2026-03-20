@@ -18,13 +18,6 @@ function decodeBase64ToBytes(base64) {
   return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
 }
 
-function normalizeBoxValue(value) {
-  if (value instanceof Uint8Array) return value;
-  if (Array.isArray(value)) return Uint8Array.from(value);
-  if (typeof value === 'string') return decodeBase64ToBytes(value);
-  throw new Error('Unexpected box value format');
-}
-
 export default function CompanyDashboard() {
   const { activeAccount, signer, wallets, isReady, activeWallet } = useWallet();
   const [loading, setLoading] = useState(false);
@@ -36,7 +29,12 @@ export default function CompanyDashboard() {
   const fetchStatuses = async () => {
     if (!activeAccount) return;
     try {
-      const algorand = AlgorandClient.testNet();
+      const client = new ConsentManagerClient({
+        resolveBy: 'id',
+        id: APP_ID,
+        sender: activeAccount.address,
+        signer: signer,
+      }, AlgorandClient.testNet().client.algod);
       const companyBytes = decodeAddress(activeAccount.address).publicKey;
       const boxesResponse = await fetch(INDEXER_URL);
       const boxesData = await boxesResponse.json();
@@ -53,8 +51,7 @@ export default function CompanyDashboard() {
           if (!arraysEqual(boxCompanyBytes, companyBytes)) continue;
 
           const userAddress = encodeAddress(userBytes);
-          const boxResponse = await algorand.client.algod.getApplicationBoxByName(APP_ID, boxKey).do();
-          const value = algosdk.decodeUint64(normalizeBoxValue(boxResponse.value), 'safe');
+          const value = await client.state.box.consents.value([userAddress, activeAccount.address]);
 
           discoveredUsers.push({
             id: userAddress,
@@ -62,8 +59,9 @@ export default function CompanyDashboard() {
             cost: 2,
           });
 
-          if (value === 1n || value === 1) newStatuses[userAddress] = 'GIVEN';
-          else if (value === 2n || value === 2) newStatuses[userAddress] = 'PAUSED';
+          if (value === 1n) newStatuses[userAddress] = 'GIVEN';
+          else if (value === 2n) newStatuses[userAddress] = 'PAUSED';
+          else if (value === undefined) newStatuses[userAddress] = 'REVOKED';
           else newStatuses[userAddress] = 'UNKNOWN';
         } catch (e) {
           console.error('Error reading consent box:', e);
