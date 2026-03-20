@@ -18,6 +18,13 @@ function decodeBase64ToBytes(base64) {
   return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
 }
 
+function normalizeBoxValue(value) {
+  if (value instanceof Uint8Array) return value;
+  if (Array.isArray(value)) return Uint8Array.from(value);
+  if (typeof value === 'string') return decodeBase64ToBytes(value);
+  throw new Error('Unexpected box value format');
+}
+
 function shortenAddress(address) {
   return `${address.slice(0, 8)}...${address.slice(-8)}`;
 }
@@ -62,7 +69,7 @@ export default function UserDashboard() {
 
           const companyAddress = encodeAddress(companyBytes);
           const boxResponse = await algorand.client.algod.getApplicationBoxByName(APP_ID, boxKey).do();
-          const value = algosdk.decodeUint64(boxResponse.value, 'safe');
+          const value = algosdk.decodeUint64(normalizeBoxValue(boxResponse.value), 'safe');
 
           discoveredCompanies.push({
             id: companyAddress,

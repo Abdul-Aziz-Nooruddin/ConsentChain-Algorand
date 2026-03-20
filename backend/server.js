@@ -58,6 +58,13 @@ const algodClient = new algosdk.Algodv2(algodToken, algodServer, algodPort);
 // Smart Contract App ID - Deployed to Testnet
 const APP_ID = parseInt(process.env.APP_ID || "757371604", 10);
 
+function normalizeBoxValue(value) {
+  if (value instanceof Uint8Array) return value;
+  if (Array.isArray(value)) return Uint8Array.from(value);
+  if (typeof value === "string") return Uint8Array.from(Buffer.from(value, "base64"));
+  throw new Error("Unexpected box value format");
+}
+
 // Example secure endpoint with CSRF protection
 app.post("/access-data", csrfProtection, async (req, res) => {
   const { userAddress, companyAddress } = req.body;
@@ -93,7 +100,7 @@ app.post("/access-data", csrfProtection, async (req, res) => {
     }
 
     // The value is a uint64 (8 bytes). We only care if it's 1 (GIVEN)
-    const value = algosdk.decodeUint64(boxResponse.value, "safe");
+    const value = algosdk.decodeUint64(normalizeBoxValue(boxResponse.value), "safe");
 
     if (value === 1n || value === 1) {
       return res.json({ 
@@ -115,4 +122,4 @@ app.post("/access-data", csrfProtection, async (req, res) => {
 
 app.listen(5000, () => {
   console.log(`Backend running on http://localhost:5000 (Monitoring App ID: ${APP_ID})`);
-});
+});
