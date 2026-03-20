@@ -39,16 +39,16 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-          <Link href="/user" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-lg transition-transform hover:scale-105 hover:shadow-xl">
+          <Link href="/user" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-lg transition-transform hover:scale-105 hover:shadow-xl">
             <User className="w-5 h-5" />
             User Dashboard
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <Link href="/company" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-full glass-card font-semibold text-lg transition-transform hover:scale-105 hover:border-blue-500/50">
+          <Link href="/company" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-full glass-card font-semibold text-lg transition-transform hover:scale-105 hover:border-blue-500/50">
             <Building2 className="w-5 h-5 text-blue-500" />
             Company Portal
           </Link>
-          <Link href="/admin" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-full glass-card font-semibold text-lg transition-transform hover:scale-105 hover:border-purple-500/50">
+          <Link href="/admin" target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-full glass-card font-semibold text-lg transition-transform hover:scale-105 hover:border-purple-500/50">
             <ShieldAlert className="w-5 h-5 text-purple-500" />
             Admin Panel
           </Link>
