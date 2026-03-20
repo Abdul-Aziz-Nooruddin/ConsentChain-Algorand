@@ -1,0 +1,43 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="720" fill="#0F172A"/>
+  <rect x="40" y="40" width="1200" height="640" rx="28" fill="url(#bg)"/>
+  <circle cx="190" cy="160" r="120" fill="#2563EB" fill-opacity="0.18"/>
+  <circle cx="1080" cy="540" r="150" fill="#14B8A6" fill-opacity="0.15"/>
+  <text x="100" y="120" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="48" font-weight="700">ConsentChain Algorand</text>
+  <text x="100" y="165" fill="#93C5FD" font-family="Segoe UI, Arial, sans-serif" font-size="22">Blockchain-based consent management for user, company, and admin roles</text>
+
+  <rect x="100" y="235" width="300" height="250" rx="24" fill="#0F172A" fill-opacity="0.78" stroke="#1E293B"/>
+  <rect x="490" y="235" width="300" height="250" rx="24" fill="#0F172A" fill-opacity="0.78" stroke="#1E293B"/>
+  <rect x="880" y="235" width="300" height="250" rx="24" fill="#0F172A" fill-opacity="0.78" stroke="#1E293B"/>
+
+  <text x="135" y="290" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">User Portal</text>
+  <text x="135" y="330" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Grant consent</text>
+  <text x="135" y="362" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Pause consent</text>
+  <text x="135" y="394" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Revoke consent</text>
+  <text x="135" y="446" fill="#34D399" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Real wallet-driven flow</text>
+
+  <text x="525" y="290" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">Company Portal</text>
+  <text x="525" y="330" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Read consented users</text>
+  <text x="525" y="362" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Pay through escrow flow</text>
+  <text x="525" y="394" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Access only with consent</text>
+  <text x="525" y="446" fill="#60A5FA" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">On-chain consent discovery</text>
+
+  <text x="915" y="290" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">Admin Portal</text>
+  <text x="915" y="330" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Restricted wallet access</text>
+  <text x="915" y="362" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Box metrics</text>
+  <text x="915" y="394" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="20">Recent transaction log</text>
+  <text x="915" y="446" fill="#C084FC" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Role-specific admin view</text>
+
+  <path d="M400 360H490" stroke="#38BDF8" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 10"/>
+  <path d="M790 360H880" stroke="#38BDF8" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 10"/>
+
+  <rect x="390" y="545" width="500" height="80" rx="18" fill="#020617" fill-opacity="0.82" stroke="#1D4ED8"/>
+  <text x="435" y="593" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700">Algorand Testnet + Pera Wallet + Smart Contract Boxes</text>
+
+  <defs>
+    <linearGradient id="bg" x1="40" y1="40" x2="1240" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#0B1120"/>
+    </linearGradient>
+  </defs>
+</svg>

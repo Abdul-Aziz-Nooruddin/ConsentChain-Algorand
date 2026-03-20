@@ -1,67 +1,179 @@
-# ConsentChain Algorand - DPDP Act 2023 Implementation
+# ConsentChain Algorand
 
-ConsentChain is a decentralized application (dApp) built on the Algorand blockchain designed to manage data consent in compliance with the **Digital Personal Data Protection (DPDP) Act of 2023** of India. 
+ConsentChain Algorand is a blockchain-based consent management platform built on Algorand for DPDP Act 2023 style data-consent workflows. It gives users a clear way to grant, pause, and revoke consent, lets companies request access through a wallet-driven flow, and provides an admin view for monitoring platform activity.
 
-It provides an immutable, transparent, and fair ecosystem for end-users to manage who accesses their data, and it allows companies to properly request and pay for such access.
+This repository is designed for demos, hackathons, and portfolio review. The current app uses separate User, Company, and Admin portals, real Algorand Testnet wallets, and on-chain consent records instead of mock consent lists.
 
-## Features
+![ConsentChain Algorand Preview](docs/screenshots/consentchain-overview.svg)
 
-- **DPDP Act Compliance**: Users can easily choose to **Give**, **Pause**, or **Revoke** consent at any given time.
-- **50/50 Escrow Micro-Payments**: Companies pay a small ALGO fee to an Escrow Smart Contract to access data. The smart contract automatically splits this fee 50% to the Platform Admin and 50% to the specific User.
-- **Pera Wallet Integration**: Secure login and transaction signing using Pera Wallet Connect.
-- **High-Speed Architecture**: Leveraging Algorand's ~3.3-second finality and microscopic transaction costs to make per-request escrow payments viable.
-- **Next.js & Glassmorphism Design**: A hyper-modern, sleek web portal for Users, Companies, and Admins.
-- **Node.js Express Backend**: Off-chain backend storage protected by `express-rate-limit` that directly verifies Algorand Smart Contract BoxMap states before releasing simulated user data.
+## Why This Project Matters
+
+Digital consent systems are often opaque, centralized, and hard for users to verify. ConsentChain Algorand explores a different model:
+
+- Users control who can access their data
+- Companies must rely on explicit consent status
+- Consent state is auditable on-chain
+- Access can be paired with escrow-style payment logic
+- Admin monitoring is separated from user and company roles
+
+## Core Features
+
+- Real wallet-based role separation for User, Company, and Admin flows
+- Consent actions on Algorand Testnet: `Give`, `Pause`, and `Revoke`
+- On-chain consent discovery from Algorand application box storage
+- Company portal that only surfaces users who actually granted consent to that company wallet
+- Admin portal restricted to an approved admin wallet address
+- Pera Wallet integration for connection and transaction signing
+- Next.js frontend, Express backend, and Algorand smart contract architecture
+
+## Demo Roles
+
+The app is easiest to demonstrate with three Algorand Testnet wallets:
+
+- `User Wallet`
+  Grants, pauses, or revokes consent
+- `Company Wallet`
+  Views real consented users and initiates the data purchase flow
+- `Admin Wallet`
+  Views platform metrics and recent application activity
+
+## Screenshots And Demo Assets
+
+This repository includes a preview asset for GitHub and project sharing:
+
+- [ConsentChain overview graphic](docs/screenshots/consentchain-overview.svg)
+
+Recommended screenshots to add later for even better GitHub presentation:
+
+- Home page
+- User dashboard with granted consent
+- Company portal with a real consented user
+- Admin panel with metrics and transaction log
+
+## How The Flow Works
+
+```mermaid
+flowchart LR
+  U[User Wallet] -->|Give / Pause / Revoke Consent| SC[Algorand Consent Smart Contract]
+  C[Company Wallet] -->|Reads Consent State| SC
+  C -->|Buy Data / Escrow Payment| SC
+  A[Admin Wallet] -->|Monitor Metrics| IDX[Algorand Indexer]
+  IDX --> UI[ConsentChain Portals]
+  SC --> UI
+```
+
+## What Makes This Repo Different
+
+- The user and company dashboards now read real on-chain consent relationships
+- The portals use wallet-specific entry flows instead of a single shared homepage connection
+- The admin panel is restricted to an approved wallet and masks the displayed admin address in the UI
+- The homepage opens each portal in a separate tab, which makes role-based demos cleaner
 
 ## Project Structure
 
-- **`/frontend`**: Next.js 15 application utilizing standard React patterns and Pera Wallet (`@txnlab/use-wallet`).
-- **`/backend`**: Express Node.js application acting as the off-chain data provider. Connects natively to an Algorand node (`algosdk`) to verify consent statuses.
-- **`/consentchain-algorand`**: Algokit Smart Contract project. Contains the `ConsentManager` TEALScript (PuyaTS) codebase mapped to Box Storage arrays.
+- [`frontend`](frontend): Next.js application for the User, Company, and Admin portals
+- [`backend`](backend): Express API that verifies consent state before releasing protected data
+- [`contracts`](contracts): Algorand smart contract project and generated client artifacts
+- [`docs/screenshots`](docs/screenshots): repository preview assets and future screenshot location
 
 ## Tech Stack
-- Frontend: Next.js (App Router), Tailwind CSS v4, Lucide React
+
+- Frontend: Next.js App Router, React, Tailwind CSS, Lucide React
+- Wallet: Pera Wallet via `@txnlab/use-wallet-react`
 - Backend: Node.js, Express, `algosdk`
-- Blockchain/Smart Contracts: Algorand, PuyaTS, AlgoKit CLI
-- Wallets: Pera Wallet
+- Blockchain: Algorand Testnet, AlgoKit, PuyaTS
+- Data Access Logic: on-chain consent verification plus backend-controlled release
 
-## Prerequisites
+## Local Development
 
-To run this repository locally, you will need:
-- Node.js (v18+)
-- Docker (for AlgoKit LocalNet)
-- [AlgoKit CLI](https://github.com/algorandfoundation/algokit-cli) 
+### Prerequisites
 
-## Quick Start
+- Node.js 18+
+- Docker
+- [AlgoKit CLI](https://github.com/algorandfoundation/algokit-cli)
+- Pera Wallet configured for Algorand Testnet
 
-### 1. Start LocalNet
+### 1. Start Algorand LocalNet
+
 ```bash
 algokit localnet start
 ```
 
-### 2. Deploy the Smart Contract
+### 2. Build And Deploy The Smart Contract
+
 ```bash
-cd consentchain-algorand/projects/consentchain-algorand
+cd contracts/consentchain-algorand
 npm install
 npm run build
 npm run deploy
 ```
 
-### 3. Run the Backend API
+### 3. Start The Backend
+
 ```bash
 cd backend
 npm install
 npm start
 ```
-*(The backend defaults to port 5000)*
 
-### 4. Run the Frontend portal
+Default backend port: `5000`
+
+### 4. Start The Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-*(The frontend defaults to port 3000)*
 
----
-*Built for the future of data sovereignty.*
+Default frontend port: `3000`
+
+## Judge Demo Setup
+
+For a clean live demo:
+
+1. Create three Algorand Testnet wallets
+2. Fund each wallet with Testnet ALGO
+3. Use one wallet for `User`
+4. Use one wallet for `Company`
+5. Use one wallet for `Admin`
+6. Open the homepage and launch each portal in a new tab
+7. Connect the correct wallet inside each portal
+
+Suggested tab layout:
+
+- Tab 1: Home
+- Tab 2: User Dashboard
+- Tab 3: Company Portal
+- Tab 4: Admin Panel
+
+## Search-Friendly Keywords
+
+This repository is relevant for:
+
+- Algorand consent management
+- ConsentChain Algorand
+- DPDP Act blockchain project
+- Web3 privacy and data consent
+- Pera Wallet demo application
+- Algorand smart contract consent platform
+
+## Suggested GitHub Topics
+
+Add these topics in the GitHub repository settings for better discoverability:
+
+`algorand`, `consent-management`, `dpdp`, `blockchain`, `nextjs`, `pera-wallet`, `privacy`, `web3`, `smart-contracts`, `data-consent`
+
+## Future Improvements
+
+- Better screenshot gallery in the README
+- Custom company metadata instead of address-only display
+- Stronger admin role management
+- Production deployment hardening
+- Expanded off-chain data release workflows
+
+## License
+
+This project is licensed under the terms in [LICENSE](LICENSE).
+
+Built for data sovereignty on Algorand.
