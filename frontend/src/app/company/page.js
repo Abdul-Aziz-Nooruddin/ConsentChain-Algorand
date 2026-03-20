@@ -18,23 +18,29 @@ function decodeBase64ToBytes(base64) {
   return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
 }
 
+function normalizeBoxValue(value) {
+  if (value instanceof Uint8Array) return value;
+  if (Array.isArray(value)) return Uint8Array.from(value);
+  if (typeof value === 'string') return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+  throw new Error('Unexpected box value format');
+}
+
 export default function CompanyDashboard() {
-  const { activeAccount, signer, wallets, isReady, activeWallet } = useWallet();
+  const { activeAccount, transactionSigner, wallets, isReady, activeWallet, algodClient } = useWallet();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [consentStatuses, setConsentStatuses] = useState({});
   const [purchasedData, setPurchasedData] = useState({});
   const [users, setUsers] = useState([]);
   const [portalReady, setPortalReady] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const fetchStatuses = async () => {
     if (!activeAccount) return;
     try {
-      const client = new ConsentManagerClient({
-        resolveBy: 'id',
-        id: APP_ID,
-        sender: activeAccount.address,
-        signer: signer,
-      }, AlgorandClient.testNet().client.algod);
       const companyBytes = decodeAddress(activeAccount.address).publicKey;
       const boxesResponse = await fetch(INDEXER_URL);
       const boxesData = await boxesResponse.json();
@@ -51,7 +57,8 @@ export default function CompanyDashboard() {
           if (!arraysEqual(boxCompanyBytes, companyBytes)) continue;
 
           const userAddress = encodeAddress(userBytes);
-          const value = await client.state.box.consents.value([userAddress, activeAccount.address]);
+          const boxResponse = await algodClient.getApplicationBoxByName(APP_ID, boxKey).do();
+          const value = algosdk.decodeUint64(normalizeBoxValue(boxResponse.value), 'safe');
 
           discoveredUsers.push({
             id: userAddress,
@@ -61,7 +68,6 @@ export default function CompanyDashboard() {
 
           if (value === 1n) newStatuses[userAddress] = 'GIVEN';
           else if (value === 2n) newStatuses[userAddress] = 'PAUSED';
-          else if (value === undefined) newStatuses[userAddress] = 'REVOKED';
           else newStatuses[userAddress] = 'UNKNOWN';
         } catch (e) {
           console.error('Error reading consent box:', e);
@@ -128,7 +134,7 @@ export default function CompanyDashboard() {
   };
 
   const handleBuyData = async (userAddress, userId) => {
-    if (!activeAccount || !signer) return;
+    if (!activeAccount || !transactionSigner) return;
     setLoading(true);
     try {
       const algorand = AlgorandClient.testNet();
@@ -136,7 +142,7 @@ export default function CompanyDashboard() {
         resolveBy: 'id',
         id: APP_ID,
         sender: activeAccount.address,
-        signer: signer,
+        signer: transactionSigner,
       }, algorand.client.algod);
 
       const payTxn = await algorand.createTransaction.payment({
@@ -162,6 +168,15 @@ export default function CompanyDashboard() {
       setLoading(false);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-4" />
+        <p className="text-slate-500">Loading company portal...</p>
+      </div>
+    );
+  }
 
   if (!activeAccount || !portalReady) {
     return (

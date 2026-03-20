@@ -19,6 +19,7 @@ function maskAdminAddress(address) {
 
 export default function AdminDashboard() {
   const { activeAccount, wallets, isReady, activeWallet } = useWallet();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [portalReady, setPortalReady] = useState(false);
   const [metrics, setMetrics] = useState({
@@ -27,6 +28,10 @@ export default function AdminDashboard() {
     txCount: 0,
     recentTxs: []
   });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isAuthorizedAdmin = activeAccount?.address === ADMIN_WALLET_ADDRESS;
 
@@ -105,6 +110,15 @@ export default function AdminDashboard() {
       window.alert(`Disconnect failed: ${error.message}`);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-4" />
+        <p className="text-slate-500">Loading admin portal...</p>
+      </div>
+    );
+  }
 
   if (!activeAccount || !portalReady) {
     return (

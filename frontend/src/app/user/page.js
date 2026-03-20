@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Shield, PauseCircle, PlayCircle, XCircle, Building, Loader2 } from 'lucide-react';
 import { AlgorandClient } from '@algorandfoundation/algokit-utils';
 import { ConsentManagerClient } from '@/contracts/ConsentManagerClient';
-import { decodeAddress, encodeAddress } from 'algosdk';
+import algosdk, { decodeAddress, encodeAddress } from 'algosdk';
 
 const APP_ID = 757371604;
 const INDEXER_URL = `https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/boxes?limit=1000`;
@@ -16,6 +16,13 @@ function arraysEqual(left, right) {
 
 function decodeBase64ToBytes(base64) {
   return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+}
+
+function normalizeBoxValue(value) {
+  if (value instanceof Uint8Array) return value;
+  if (Array.isArray(value)) return Uint8Array.from(value);
+  if (typeof value === 'string') return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+  throw new Error('Unexpected box value format');
 }
 
 function shortenAddress(address) {
@@ -34,7 +41,8 @@ function buildConsentBoxReference(userAddress, companyAddress) {
 }
 
 export default function UserDashboard() {
-  const { activeAccount, signer, wallets, isReady, activeWallet } = useWallet();
+  const { activeAccount, transactionSigner, wallets, isReady, activeWallet, algodClient } = useWallet();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [companyAddressInput, setCompanyAddressInput] = useState('');
@@ -42,13 +50,17 @@ export default function UserDashboard() {
   const [portalReady, setPortalReady] = useState(false);
   const [consentStatuses, setConsentStatuses] = useState({});
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const getClient = () => {
     const algorand = AlgorandClient.testNet();
     return new ConsentManagerClient({
       resolveBy: 'id',
       id: APP_ID,
       sender: activeAccount?.address,
-      signer: signer,
+      signer: transactionSigner,
     }, algorand.client.algod);
   };
 
@@ -72,7 +84,8 @@ export default function UserDashboard() {
           if (!arraysEqual(boxUserBytes, userBytes)) continue;
 
           const companyAddress = encodeAddress(companyBytes);
-          const value = await client.state.box.consents.value([activeAccount.address, companyAddress]);
+          const boxResponse = await algodClient.getApplicationBoxByName(APP_ID, boxKey).do();
+          const value = algosdk.decodeUint64(normalizeBoxValue(boxResponse.value), 'safe');
 
           discoveredCompanies.push({
             id: companyAddress,
@@ -82,7 +95,6 @@ export default function UserDashboard() {
 
           if (value === 1n) newStatuses[companyAddress] = 'GIVEN';
           else if (value === 2n) newStatuses[companyAddress] = 'PAUSED';
-          else if (value === undefined) newStatuses[companyAddress] = 'REVOKED';
           else newStatuses[companyAddress] = 'UNKNOWN';
         } catch (e) {
           console.error('Error reading consent box:', e);
@@ -152,19 +164,28 @@ export default function UserDashboard() {
     if (!activeAccount) return;
     setLoading(true);
     try {
-      const client = getClient();
-      let result;
-      const boxReferences = buildConsentBoxReference(activeAccount.address, companyAddress);
+      const suggestedParams = await algodClient.getTransactionParams().do();
+      const composer = new algosdk.AtomicTransactionComposer();
+      const methodSignature =
+        action === 'give'
+          ? 'giveConsent(address)void'
+          : action === 'pause'
+            ? 'pauseConsent(address)void'
+            : 'revokeConsent(address)void';
 
-      if (action === 'give') {
-        result = await client.send.giveConsent({ args: { company: companyAddress }, boxReferences });
-      } else if (action === 'pause') {
-        result = await client.send.pauseConsent({ args: { company: companyAddress }, boxReferences });
-      } else if (action === 'revoke') {
-        result = await client.send.revokeConsent({ args: { company: companyAddress }, boxReferences });
-      }
+      composer.addMethodCall({
+        appID: APP_ID,
+        method: algosdk.ABIMethod.fromSignature(methodSignature),
+        methodArgs: [companyAddress],
+        sender: activeAccount.address,
+        suggestedParams,
+        signer: transactionSigner,
+        boxes: buildConsentBoxReference(activeAccount.address, companyAddress),
+      });
 
-      console.log("Transaction successful:", result.transaction.txID());
+      const result = await composer.execute(algodClient, 4);
+      const txId = result.txIDs[0];
+      console.log("Transaction successful:", txId);
       setCompanies((previousCompanies) => {
         if (previousCompanies.some((company) => company.address === companyAddress)) {
           return previousCompanies;
@@ -192,6 +213,15 @@ export default function UserDashboard() {
       setLoading(false);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-4" />
+        <p className="text-slate-500">Loading user portal...</p>
+      </div>
+    );
+  }
 
   if (!activeAccount || !portalReady) {
     return (
