@@ -58,7 +58,7 @@ export default function Home() {
       <section className="container mx-auto px-6 py-20 max-w-6xl">
         <div className="grid md:grid-cols-2 gap-12 items-center mb-32">
           <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold">Powered by DPDP Act 2023 ðŸ‡®ðŸ‡³</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Powered by DPDP Act 2023</h2>
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
               The Digital Personal Data Protection Act of 2023 establishes a comprehensive framework for the processing of digital personal data in India. It recognizes both the right of individuals to protect their personal data and the need to process such data for lawful purposes.
             </p>
