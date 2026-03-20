@@ -1,0 +1,33 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="760" fill="#F8FAFC"/>
+  <rect x="40" y="40" width="1200" height="680" rx="28" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="92" y="110" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="38" font-weight="800">My Consent Dashboard</text>
+  <text x="92" y="145" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="18">Manage your data access preferences on Algorand Testnet</text>
+  <text x="962" y="110" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="16">Connected As</text>
+  <text x="930" y="140" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">USERWA...LET123</text>
+
+  <rect x="92" y="186" width="1096" height="130" rx="22" fill="#F8FAFC" stroke="#CBD5E1"/>
+  <text x="126" y="230" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">Grant Consent To A Real Company Wallet</text>
+  <text x="126" y="266" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="17">Only real on-chain consent records are shown in this dashboard.</text>
+  <rect x="126" y="286" width="760" height="52" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+  <text x="146" y="319" fill="#94A3B8" font-family="Consolas, monospace" font-size="18">Enter Algorand company wallet address</text>
+  <rect x="908" y="286" width="210" height="52" rx="14" fill="#059669"/>
+  <text x="965" y="319" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Give Consent</text>
+
+  <rect x="92" y="360" width="1096" height="148" rx="22" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <circle cx="140" cy="434" r="24" fill="#DBEAFE"/>
+  <text x="130" y="442" fill="#2563EB" font-family="Segoe UI Symbol, Arial, sans-serif" font-size="20">⌂</text>
+  <text x="184" y="418" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700">COMPAN...ABC89</text>
+  <text x="184" y="450" fill="#64748B" font-family="Consolas, monospace" font-size="16">COMPANYWALLETADDRESSDEMO12345</text>
+  <rect x="812" y="404" width="110" height="34" rx="17" fill="#D1FAE5" stroke="#A7F3D0"/>
+  <text x="842" y="426" fill="#047857" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">GIVEN</text>
+  <rect x="946" y="390" width="60" height="60" rx="16" fill="#DCFCE7"/>
+  <rect x="1024" y="390" width="60" height="60" rx="16" fill="#FEF3C7"/>
+  <rect x="1102" y="390" width="60" height="60" rx="16" fill="#FEE2E2"/>
+  <text x="956" y="470" fill="#059669" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">Give</text>
+  <text x="1030" y="470" fill="#D97706" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">Pause</text>
+  <text x="1104" y="470" fill="#DC2626" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">Revoke</text>
+
+  <rect x="92" y="536" width="1096" height="110" rx="22" fill="#F8FAFC" stroke="#CBD5E1" stroke-dasharray="10 10"/>
+  <text x="184" y="598" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="20">Every action triggers a real Algorand Testnet application call.</text>
+</svg>

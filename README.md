@@ -42,13 +42,21 @@ The app is easiest to demonstrate with three Algorand Testnet wallets:
 This repository includes a preview asset for GitHub and project sharing:
 
 - [ConsentChain overview graphic](docs/screenshots/consentchain-overview.svg)
+- [Homepage preview](docs/screenshots/homepage-preview.svg)
+- [User dashboard preview](docs/screenshots/user-dashboard-preview.svg)
+- [Company portal preview](docs/screenshots/company-portal-preview.svg)
 
-Recommended screenshots to add later for even better GitHub presentation:
+### Homepage
 
-- Home page
-- User dashboard with granted consent
-- Company portal with a real consented user
-- Admin panel with metrics and transaction log
+![ConsentChain Homepage](docs/screenshots/homepage-preview.svg)
+
+### User Dashboard
+
+![ConsentChain User Dashboard](docs/screenshots/user-dashboard-preview.svg)
+
+### Company Portal
+
+![ConsentChain Company Portal](docs/screenshots/company-portal-preview.svg)
 
 ## How The Flow Works
 

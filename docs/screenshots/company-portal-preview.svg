@@ -1,0 +1,36 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="760" fill="#F8FAFC"/>
+  <rect x="40" y="40" width="1200" height="680" rx="28" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="92" y="110" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="38" font-weight="800">Company Data Portal</text>
+  <text x="92" y="145" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="18">Access user data securely via Algorand Escrow</text>
+  <text x="962" y="110" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="16">Connected As</text>
+  <text x="912" y="140" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">COMPANY...LET567</text>
+
+  <rect x="92" y="190" width="332" height="116" rx="22" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="448" y="190" width="332" height="116" rx="22" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="804" y="190" width="384" height="116" rx="22" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="124" y="236" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">AVAILABLE RECORDS</text>
+  <text x="124" y="278" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="800">1</text>
+  <text x="480" y="236" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">PAUSED RECORDS</text>
+  <text x="480" y="278" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="800">0</text>
+  <text x="836" y="236" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">RECORDS PURCHASED</text>
+  <text x="836" y="278" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="800">0</text>
+
+  <text x="92" y="362" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="800">User Data Requests</text>
+  <rect x="92" y="392" width="1096" height="248" rx="22" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="92" y="392" width="1096" height="56" rx="22" fill="#F8FAFC"/>
+  <text x="126" y="427" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">USER WALLET</text>
+  <text x="460" y="427" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">CONSENT STATUS</text>
+  <text x="716" y="427" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">COST</text>
+  <text x="1040" y="427" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">ACTION</text>
+
+  <text x="126" y="507" fill="#334155" font-family="Consolas, monospace" font-size="16">USERWALLETADDRESSDEMO123456789</text>
+  <rect x="448" y="478" width="98" height="34" rx="17" fill="#D1FAE5" stroke="#A7F3D0"/>
+  <text x="473" y="500" fill="#047857" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">GIVEN</text>
+  <text x="716" y="503" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">2 ALGO</text>
+  <rect x="1000" y="468" width="136" height="44" rx="14" fill="#2563EB"/>
+  <text x="1034" y="496" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Buy Data</text>
+
+  <rect x="126" y="532" width="272" height="52" rx="14" fill="#EFF6FF" stroke="#BFDBFE"/>
+  <text x="146" y="564" fill="#2563EB" font-family="Segoe UI, Arial, sans-serif" font-size="16"><tspan font-weight="700">DECRYPTED DATA:</tspan><tspan> CS: 792 | Healthy</tspan></text>
+</svg>

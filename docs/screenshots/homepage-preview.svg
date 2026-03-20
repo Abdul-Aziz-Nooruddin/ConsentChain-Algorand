@@ -1,0 +1,36 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="760" fill="#020617"/>
+  <rect x="32" y="32" width="1216" height="696" rx="28" fill="url(#bg)"/>
+  <rect x="74" y="68" width="1132" height="62" rx="18" fill="#0F172A" stroke="#1E293B"/>
+  <text x="104" y="108" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">ConsentChain</text>
+  <rect x="922" y="84" width="236" height="30" rx="15" fill="#111827" stroke="#334155"/>
+  <circle cx="946" cy="99" r="6" fill="#3B82F6"/>
+  <text x="962" y="105" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="16">Connect inside each portal</text>
+
+  <text x="132" y="222" fill="#93C5FD" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">DPDP ACT 2023 COMPLIANT PLATFORM</text>
+  <text x="132" y="302" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="66" font-weight="800">Own Your Data.</text>
+  <text x="132" y="376" fill="#2DD4BF" font-family="Segoe UI, Arial, sans-serif" font-size="66" font-weight="800">Monetize Your Consent.</text>
+  <text x="132" y="434" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="24">A wallet-based Algorand platform for consent management,</text>
+  <text x="132" y="468" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="24">company access, and admin monitoring.</text>
+
+  <rect x="132" y="528" width="236" height="68" rx="34" fill="#F8FAFC"/>
+  <text x="178" y="571" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">User Dashboard</text>
+  <rect x="392" y="528" width="220" height="68" rx="34" fill="#0F172A" stroke="#38BDF8"/>
+  <text x="437" y="571" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Company Portal</text>
+  <rect x="636" y="528" width="200" height="68" rx="34" fill="#0F172A" stroke="#A855F7"/>
+  <text x="686" y="571" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Admin Panel</text>
+
+  <rect x="858" y="210" width="280" height="248" rx="26" fill="#0F172A" stroke="#1E293B"/>
+  <text x="892" y="260" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700">Why Algorand?</text>
+  <text x="892" y="308" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Blazing fast finality</text>
+  <text x="892" y="342" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Micropayments for escrow</text>
+  <text x="892" y="376" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Transparent consent records</text>
+  <text x="892" y="410" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Pera Wallet integration</text>
+
+  <defs>
+    <linearGradient id="bg" x1="32" y1="32" x2="1248" y2="728" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+</svg>
