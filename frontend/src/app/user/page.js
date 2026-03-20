@@ -5,19 +5,29 @@ import { useState, useEffect } from 'react';
 import { Shield, PauseCircle, PlayCircle, XCircle, Building, Loader2 } from 'lucide-react';
 import { AlgorandClient } from '@algorandfoundation/algokit-utils';
 import { ConsentManagerClient } from '@/contracts/ConsentManagerClient';
-import algosdk, { decodeAddress } from 'algosdk';
+import algosdk, { decodeAddress, encodeAddress } from 'algosdk';
+
+const APP_ID = 757371604;
+const INDEXER_URL = `https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/boxes?limit=1000`;
+
+function arraysEqual(left, right) {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function decodeBase64ToBytes(base64) {
+  return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+}
+
+function shortenAddress(address) {
+  return `${address.slice(0, 8)}...${address.slice(-8)}`;
+}
 
 export default function UserDashboard() {
   const { activeAccount, signer } = useWallet();
   const [loading, setLoading] = useState(false);
-  
-  // Real App ID from Testnet deployment
-  const APP_ID = 757371604;
-
-  const [companies] = useState([
-    { id: '1', name: 'HealthCorp Analytics', address: '7SWZO2R64VOG2T253CAG6OQUDD4JRW6EDMI7K4U657DQSK2YDINK4SHGQU', status: 'UNKNOWN' },
-    { id: '2', name: 'FinTech Solutions', address: 'PRAHPRIMDZLWGDDDJMYZYIV7T2SRMXISNZDA52WAK6LYFFXL2L4YJ3YSJ4', status: 'UNKNOWN' },
-  ]);
+  const [companies, setCompanies] = useState([]);
+  const [companyAddressInput, setCompanyAddressInput] = useState('');
+  const [discoveryError, setDiscoveryError] = useState('');
 
   const [consentStatuses, setConsentStatuses] = useState({});
 
@@ -35,35 +45,57 @@ export default function UserDashboard() {
     if (!activeAccount) return;
     try {
       const algorand = AlgorandClient.testNet();
+      const userBytes = decodeAddress(activeAccount.address).publicKey;
+      const boxesResponse = await fetch(INDEXER_URL);
+      const boxesData = await boxesResponse.json();
+      const discoveredCompanies = [];
       const newStatuses = {};
-      
-      for (const company of companies) {
+
+      for (const box of (boxesData.boxes || [])) {
         try {
-          // Construct the box key: "c" + user_address_bytes + company_address_bytes
-          const userBytes = decodeAddress(activeAccount.address).publicKey;
-          const companyBytes = decodeAddress(company.address).publicKey;
-          const prefix = new Uint8Array([99]); // 'c'
-          const boxKey = new Uint8Array([...prefix, ...userBytes, ...companyBytes]);
-          
+          const boxKey = decodeBase64ToBytes(box.name);
+          if (boxKey.length !== 65 || boxKey[0] !== 99) continue;
+
+          const boxUserBytes = boxKey.slice(1, 33);
+          const companyBytes = boxKey.slice(33, 65);
+          if (!arraysEqual(boxUserBytes, userBytes)) continue;
+
+          const companyAddress = encodeAddress(companyBytes);
           const boxResponse = await algorand.client.algod.getApplicationBoxByName(APP_ID, boxKey).do();
           const value = algosdk.decodeUint64(boxResponse.value, 'safe');
-          
-          if (value === 1n || value === 1) newStatuses[company.id] = 'GIVEN';
-          else if (value === 2n || value === 2) newStatuses[company.id] = 'PAUSED';
-          else newStatuses[company.id] = 'UNKNOWN';
+
+          const companyId = companyAddress;
+          discoveredCompanies.push({
+            id: companyId,
+            name: shortenAddress(companyAddress),
+            address: companyAddress,
+          });
+
+          if (value === 1n || value === 1) newStatuses[companyId] = 'GIVEN';
+          else if (value === 2n || value === 2) newStatuses[companyId] = 'PAUSED';
+          else newStatuses[companyId] = 'UNKNOWN';
         } catch (e) {
-          // 404 means box doesn't exist = Revoked/No Consent
-          newStatuses[company.id] = 'REVOKED';
+          console.error('Error reading consent box:', e);
         }
       }
+
+      setCompanies(discoveredCompanies);
       setConsentStatuses(newStatuses);
+      setDiscoveryError('');
     } catch (error) {
       console.error("Error fetching statuses:", error);
+      setDiscoveryError('Unable to load consent records from the Algorand indexer.');
     }
   };
 
   useEffect(() => {
+    if (!activeAccount) {
+      setCompanies([]);
+      setConsentStatuses({});
+      return;
+    }
     fetchStatuses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeAccount]);
 
   const handleConsentAction = async (companyAddress, action) => {
@@ -83,6 +115,20 @@ export default function UserDashboard() {
       }
       
       console.log("Transaction successful:", result.transaction.txID());
+      setCompanies((previousCompanies) => {
+        if (previousCompanies.some((company) => company.address === companyAddress)) {
+          return previousCompanies;
+        }
+        return [
+          ...previousCompanies,
+          {
+            id: companyAddress,
+            name: shortenAddress(companyAddress),
+            address: companyAddress,
+          },
+        ];
+      });
+      setCompanyAddressInput('');
       alert(`Consent ${action}d successfully on Algorand Testnet!`);
       await fetchStatuses(); // Refresh after action
     } catch (error) {
@@ -121,7 +167,7 @@ export default function UserDashboard() {
         </div>
         <div className="text-right">
           <p className="text-sm text-slate-500">Connected As</p>
-          <p className="font-mono font-medium">{activeAccount.address.slice(0, 8)}...{activeAccount.address.slice(-8)}</p>
+          <p className="font-mono font-medium">{shortenAddress(activeAccount.address)}</p>
         </div>
       </div>
 
@@ -134,7 +180,34 @@ export default function UserDashboard() {
         </div>
       )}
 
+      <div className="glass-card p-6 rounded-2xl mb-6">
+        <h2 className="text-lg font-semibold mb-2">Grant Consent To A Real Company Wallet</h2>
+        <p className="text-sm text-slate-500 mb-4">This dashboard now shows only companies discovered from your actual on-chain consent records.</p>
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            type="text"
+            value={companyAddressInput}
+            onChange={(event) => setCompanyAddressInput(event.target.value.trim())}
+            placeholder="Enter Algorand company wallet address"
+            className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/60 px-4 py-3 text-sm font-mono"
+          />
+          <button
+            onClick={() => handleConsentAction(companyAddressInput, 'give')}
+            disabled={!companyAddressInput || loading}
+            className="px-5 py-3 rounded-xl bg-emerald-600 text-white font-semibold disabled:opacity-50"
+          >
+            Give Consent
+          </button>
+        </div>
+        {discoveryError && <p className="mt-3 text-sm text-red-600">{discoveryError}</p>}
+      </div>
+
       <div className="grid gap-6">
+        {companies.length === 0 && !discoveryError && (
+          <div className="glass-card p-8 rounded-2xl text-center text-slate-500">
+            No real company consent records were found for this wallet yet.
+          </div>
+        )}
         {companies.map(company => (
           <div key={company.id} className="glass-card p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4 w-full md:w-auto">

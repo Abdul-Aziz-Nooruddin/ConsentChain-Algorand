@@ -2,48 +2,67 @@
 
 import { useWallet } from '@txnlab/use-wallet-react';
 import { useState, useEffect } from 'react';
-import { Shield, Building2, Eye, Database, Coins, Loader2 } from 'lucide-react';
+import { Shield, Building2, Database, Coins, Loader2 } from 'lucide-react';
 import { AlgorandClient } from '@algorandfoundation/algokit-utils';
 import { ConsentManagerClient } from '@/contracts/ConsentManagerClient';
-import algosdk, { decodeAddress } from 'algosdk';
+import algosdk, { decodeAddress, encodeAddress } from 'algosdk';
+
+const APP_ID = 757371604;
+const INDEXER_URL = `https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/boxes?limit=1000`;
+
+function arraysEqual(left, right) {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function decodeBase64ToBytes(base64) {
+  return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+}
 
 export default function CompanyDashboard() {
   const { activeAccount, signer } = useWallet();
   const [loading, setLoading] = useState(false);
   const [consentStatuses, setConsentStatuses] = useState({});
   const [purchasedData, setPurchasedData] = useState({});
-
-  const APP_ID = 757371604;
-
-  const [users] = useState([
-    { id: '1', address: '7SWZO2R64VOG2T253CAG6OQUDD4JRW6EDMI7K4U657DQSK2YDINK4SHGQU', name: 'User A', cost: 2 },
-    { id: '2', address: 'PRAHPRIMDZLWGDDDJMYZYIV7T2SRMXISNZDA52WAK6LYFFXL2L4YJ3YSJ4', name: 'User B', cost: 2 },
-  ]);
+  const [users, setUsers] = useState([]);
 
   const fetchStatuses = async () => {
     if (!activeAccount) return;
     try {
       const algorand = AlgorandClient.testNet();
+      const companyBytes = decodeAddress(activeAccount.address).publicKey;
+      const boxesResponse = await fetch(INDEXER_URL);
+      const boxesData = await boxesResponse.json();
+      const discoveredUsers = [];
       const newStatuses = {};
       
-      for (const user of users) {
+      for (const box of (boxesData.boxes || [])) {
         try {
-          // Box Key: 'c' + User + Company (activeAccount.address)
-          const userBytes = decodeAddress(user.address).publicKey;
-          const companyBytes = decodeAddress(activeAccount.address).publicKey;
-          const prefix = new Uint8Array([99]);
-          const boxKey = new Uint8Array([...prefix, ...userBytes, ...companyBytes]);
-          
+          const boxKey = decodeBase64ToBytes(box.name);
+          if (boxKey.length !== 65 || boxKey[0] !== 99) continue;
+
+          const userBytes = boxKey.slice(1, 33);
+          const boxCompanyBytes = boxKey.slice(33, 65);
+          if (!arraysEqual(boxCompanyBytes, companyBytes)) continue;
+
+          const userAddress = encodeAddress(userBytes);
           const boxResponse = await algorand.client.algod.getApplicationBoxByName(APP_ID, boxKey).do();
           const value = algosdk.decodeUint64(boxResponse.value, 'safe');
-          
-          if (value === 1n || value === 1) newStatuses[user.id] = 'GIVEN';
-          else if (value === 2n || value === 2) newStatuses[user.id] = 'PAUSED';
-          else newStatuses[user.id] = 'UNKNOWN';
+
+          discoveredUsers.push({
+            id: userAddress,
+            address: userAddress,
+            cost: 2,
+          });
+
+          if (value === 1n || value === 1) newStatuses[userAddress] = 'GIVEN';
+          else if (value === 2n || value === 2) newStatuses[userAddress] = 'PAUSED';
+          else newStatuses[userAddress] = 'UNKNOWN';
         } catch (e) {
-          newStatuses[user.id] = 'REVOKED';
+          console.error('Error reading consent box:', e);
         }
       }
+
+      setUsers(discoveredUsers);
       setConsentStatuses(newStatuses);
     } catch (error) {
       console.error("Error fetching statuses:", error);
@@ -51,7 +70,13 @@ export default function CompanyDashboard() {
   };
 
   useEffect(() => {
+    if (!activeAccount) {
+      setUsers([]);
+      setConsentStatuses({});
+      return;
+    }
     fetchStatuses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeAccount]);
 
   const handleBuyData = async (userAddress, userId) => {
@@ -156,6 +181,13 @@ export default function CompanyDashboard() {
             </tr>
           </thead>
           <tbody>
+            {users.length === 0 && (
+              <tr>
+                <td colSpan="4" className="py-12 px-6 text-center text-slate-400">
+                  No real user consent records were found for this company wallet.
+                </td>
+              </tr>
+            )}
             {users.map((user, i) => (
               <tr key={i} className="border-b border-slate-200 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-900/20 transition-colors">
                 <td className="py-4 px-6">
